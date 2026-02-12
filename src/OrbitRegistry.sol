@@ -10,8 +10,12 @@ contract OrbitRegistry {
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOnlyOwner();
         _;
+    }
+
+    function _checkOnlyOwner() internal view {
+        require(msg.sender == owner, "only owner");
     }
 
     constructor() {

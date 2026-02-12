@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import { Script } from "forge-std/Script.sol";
+import { console } from "forge-std/console.sol";
+import { OrbitChainRegistry } from "../src/OrbitChainRegistry.sol";
+
+contract Initialize is Script {
+    function run() external {
+        // Arbitrum Sepolia deployment addresses
+        address registryAddr = 0xf8f7EE86662e6eC391033EFcF4221057F723f9B1;
+        
+        // Chain configuration for Arbitrum Sepolia (Chain ID: 421614)
+        uint256 chainId = 421614;
+        address operator = vm.envAddress("OPERATOR_ADDRESS");
+        uint256 expectedBlockTime = 250; // milliseconds (0.25 seconds)
+        uint256 maxBlockLag = 60; // 60 blocks = ~15 seconds
+        string memory chainName = "Arbitrum Sepolia";
+        
+        uint256 deployerKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerKey);
+
+        OrbitChainRegistry registry = OrbitChainRegistry(registryAddr);
+        
+        console.log("Registering chain:", chainName);
+        console.log("Chain ID:", chainId);
+        console.log("Operator:", operator);
+        console.log("Expected Block Time:", expectedBlockTime, "ms");
+        console.log("Max Block Lag:", maxBlockLag, "blocks");
+        
+        registry.registerChain(
+            chainId,
+            operator,
+            expectedBlockTime,
+            maxBlockLag,
+            chainName
+        );
+        
+        console.log("Chain registered successfully!");
+
+        vm.stopBroadcast();
+    }
+}

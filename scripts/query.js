@@ -42,35 +42,49 @@ async function main() {
   console.log(' - lastHeartbeat (unix):', last.toString());
   console.log(' - inIncident:', incident);
 
-  // fetch incident timeline from events
-  const raisedFilter = monitor.filters.IncidentRaised(chainId);
-  const clearedFilter = monitor.filters.IncidentCleared(chainId);
+  const incidentManagerAddress = process.env.INCIDENT_MANAGER_ADDRESS;
+
+  const IncidentAbi = [
+    'event IncidentRaised(uint256 indexed incidentId, uint256 indexed chainId, uint8 indexed failureType, uint8 severity, string description, uint256 timestamp)',
+    'event IncidentResolved(uint256 indexed incidentId, uint256 indexed chainId, string reason, uint256 timestamp)'
+  ];
+
+  const incidentManager = new ethers.Contract(incidentManagerAddress, IncidentAbi, provider);
+
+  // ... (keeping registry/monitor checks for other stats)
+
+  console.log('Chain', chainId);
+  // ... (keeping stats logs)
+
+  console.log('\nIncident Timeline (from IncidentManager):');
+
+  const raisedFilter = incidentManager.filters.IncidentRaised(null, chainId);
+  const resolvedFilter = incidentManager.filters.IncidentResolved(null, chainId);
+
   const fromBlock = 0;
   const toBlock = 'latest';
-  const raisedLogs = await provider.getLogs({ address: monitorAddress, topics: raisedFilter.topics, fromBlock, toBlock });
-  const clearedLogs = await provider.getLogs({ address: monitorAddress, topics: clearedFilter.topics, fromBlock, toBlock });
+  const raisedLogs = await provider.getLogs({ address: incidentManagerAddress, topics: raisedFilter.topics, fromBlock, toBlock });
+  const resolvedLogs = await provider.getLogs({ address: incidentManagerAddress, topics: resolvedFilter.topics, fromBlock, toBlock });
 
-  if (raisedLogs.length === 0 && clearedLogs.length === 0) {
-    console.log('No incidents recorded');
-    return;
-  }
-
-  console.log('\nIncident Timeline:');
-  // decode and merge events by block/time for simple timeline
-  const iface = new ethers.Interface(MonitorAbi);
+  const iface = new ethers.Interface(IncidentAbi);
   const entries = [];
+
   for (const l of raisedLogs) {
     const ev = iface.parseLog(l);
-    entries.push({ type: 'RAISE', ts: ev.args.triggeredAt.toString(), reason: ev.args.reason });
+    entries.push({ type: 'RAISE', ts: ev.args.timestamp.toString(), reason: ev.args.description, severity: ev.args.severity });
+  }
+  for (const l of resolvedLogs) {
+    const ev = iface.parseLog(l);
+    entries.push({ type: 'RESOLVE', ts: ev.args.timestamp.toString(), reason: ev.args.reason });
   }
   for (const l of clearedLogs) {
     const ev = iface.parseLog(l);
     entries.push({ type: 'CLEAR', ts: ev.args.clearedAt.toString() });
   }
-  entries.sort((a,b) => Number(a.ts) - Number(b.ts));
+  entries.sort((a, b) => Number(a.ts) - Number(b.ts));
   for (const e of entries) {
-    if (e.type === 'RAISE') console.log(' - [RAISE] ts=', e.ts, 'reason=', e.reason);
-    else console.log(' - [CLEAR] ts=', e.ts);
+    if (e.type === 'RAISE') console.log(' - [RAISE] ts=', e.ts, 'reason=', e.reason, 'severity=', e.severity);
+    else console.log(' - [RESOLVE] ts=', e.ts, 'reason=', e.reason);
   }
 }
 

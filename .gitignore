@@ -1,0 +1,80 @@
+# Analytics and local data
+data/
+deploy.log
+
+# Next.js build output
+.next/
+tsconfig.tsbuildinfo
+
+# Extra env files
+.env.monitor
+.env.optimism.example
+
+# Agent logs
+agent/failure_timeline.json
+# Environment Variables - NEVER COMMIT
+.env
+.env.local
+.env.*.local
+.env.testnet
+.env.mainnet
+.env.arbitrum
+.env.optimism
+.env.production
+
+# Private Keys & Secrets
+*.pem
+*.key
+*.pkcs12
+*.pfx
+*.p12
+secrets/
+.secrets/
+
+# Deployment Artifacts (often contain sensitive data)
+.deployments
+deployments/
+broadcast/
+
+# Build & Cache
+out/
+cache/
+forge-cache/
+artifacts/
+
+# Node
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/
+.idea_modules/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Test Coverage
+coverage/
+.coverage_cache/
+lcov.info
+
+# Logs
+*.log
+logs/
+
+# Temporary
+tmp/
+temp/
+*.tmp

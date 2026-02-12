@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./SignalTypes.sol";
+import { SignalTypes } from "./SignalTypes.sol";
+import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title ValidatorRegistry
- * @dev Economic security layer for ChainWard
+ * @dev Economic security layer for ChainWard with flexible governance
  * 
  * Problem: Anyone can submit signals. Reporters could lie or spam false incidents.
  * 
@@ -15,17 +16,25 @@ import "./SignalTypes.sol";
  * - Arbitrator decides truth within N blocks
  * - Loser's bond is slashed; winner gets portion
  * 
+ * Governance:
+ * - Can be deployed with simple owner (backward compatible)
+ * - Or with AccessControl for multisig/DAO governance
+ * - Supports both ARBITRATOR_ROLE and PARAMETER_SETTER_ROLE
+ * 
  * This creates economic incentive for accuracy without central trust.
  */
-contract ValidatorRegistry {
+contract ValidatorRegistry is AccessControl {
+    // Role definitions
+    bytes32 public constant ARBITRATOR_ROLE = keccak256("ARBITRATOR_ROLE");
+    bytes32 public constant PARAMETER_SETTER_ROLE = keccak256("PARAMETER_SETTER_ROLE");
+    
     // Supported tokens for bonding (e.g., USDC, ARB, ETH)
     address[] public supportedTokens;
     mapping(address => bool) public isTokenSupported;
     mapping(address => uint256) public tokenMinBond; // token => minimum bond required
     
-    address public owner;
+    address public owner; // Kept for backward compatibility
     address public arbitrator; // DAO or oracle that decides disputes
-    
     uint256 public disputePeriod = 7 days; // Time to challenge a signal
     uint256 public arbitrationTime = 3 days; // Time for arbitrator to decide
     
@@ -70,9 +79,13 @@ contract ValidatorRegistry {
     mapping(uint256 => Dispute) public disputes; // disputeId => dispute
     uint256 public nextDisputeId;
     
-    // Rewards & slashing
-    uint256 public accuracyRewardRate = 5; // 5% of bond for accurate signals
-    uint256 public slashRate = 50; // 50% of bond slashed for false signals
+    // Rewards & slashing (packed into single slot for gas optimization)
+    // Lower 128 bits: accuracyRewardRate
+    // Upper 128 bits: slashRate
+    uint256 private rewardAndSlashPacked = (50 << 128) | 5; // Initial: slashRate=50, accuracyRewardRate=5
+    
+    // Bit masks for unpacking
+    uint256 private constant RATE_MASK = (1 << 128) - 1;
     
     event ReporterRegistered(address indexed reporter, address indexed token, uint256 bondAmount);
     event ReporterSlashed(address indexed reporter, uint256 amount, string reason);
@@ -80,25 +93,55 @@ contract ValidatorRegistry {
     event SignalRecorded(uint256 indexed signalId, address indexed reporter, uint256 chainId);
     event DisputeRaised(uint256 indexed disputeId, uint256 indexed signalId, address indexed challenger);
     event DisputeResolved(uint256 indexed disputeId, bool isValid, address winner, uint256 winnings);
+    event AdminParameterUpdated(string indexed paramName, uint256 newValue);
     
-    modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+    modifier onlyAdminOrRole() {
+        _checkOnlyAdminOrRole();
         _;
     }
     
-    modifier onlyArbitrator() {
-        require(msg.sender == arbitrator, "only arbitrator");
+    modifier onlyArbitratorOrRole() {
+        _checkOnlyArbitratorOrRole();
         _;
     }
     
     modifier onlyReporter(address reporter) {
-        require(reporters[reporter].isActive, "not active reporter");
+        _checkOnlyReporter(reporter);
         _;
     }
+
+    function _checkOnlyAdminOrRole() internal view {
+        require(msg.sender == owner || hasRole(PARAMETER_SETTER_ROLE, msg.sender), "only admin");
+    }
+
+    function _checkOnlyArbitratorOrRole() internal view {
+        require(msg.sender == arbitrator || hasRole(ARBITRATOR_ROLE, msg.sender), "only arbitrator");
+    }
+
+    function _checkOnlyReporter(address reporter) internal view {
+        require(reporters[reporter].isActive, "not active reporter");
+    }
     
-    constructor() {
+    /**
+     * @dev Constructor - supports both simple owner and AccessControl modes
+     * If deployed without parameters, uses simple owner mode (backward compatible)
+     * If deployed with initialAdmin, uses AccessControl mode
+     */
+    constructor(address initialAdmin, address initialArbitrator) {
         owner = msg.sender;
-        arbitrator = msg.sender; // Start as owner, can be changed to DAO
+        arbitrator = msg.sender;
+        
+        // Only setup roles if initialAdmin is provided (non-zero)
+        if (initialAdmin != address(0)) {
+            _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
+            _grantRole(PARAMETER_SETTER_ROLE, initialAdmin);
+            owner = initialAdmin;
+        }
+        
+        if (initialArbitrator != address(0)) {
+            _grantRole(ARBITRATOR_ROLE, initialArbitrator);
+            arbitrator = initialArbitrator;
+        }
     }
     
     // ============ REPORTER MANAGEMENT ============
@@ -227,7 +270,7 @@ contract ValidatorRegistry {
      */
     function resolveDispute(uint256 disputeId, bool isValid) 
         external 
-        onlyArbitrator 
+        onlyArbitratorOrRole 
     {
         Dispute storage dispute = disputes[disputeId];
         require(!dispute.settled, "already resolved");
@@ -248,14 +291,14 @@ contract ValidatorRegistry {
             // Reporter keeps their bond
             // Challenger loses their bond (goes to reporter)
             
-            uint256 winnings = (challengerBond * slashRate) / 100;
+            uint256 winnings = (challengerBond * _getSlashRate()) / 100;
             uint256 arbitrationFee = challengerBond - winnings;
             
             _transferToken(winnerToken, address(this), signal.reporter, winnings);
             _transferToken(winnerToken, address(this), arbitrator, arbitrationFee);
             
             // Also reward accuracy
-            uint256 reward = (reporterBond * accuracyRewardRate) / 100;
+            uint256 reward = (reporterBond * _getAccuracyRewardRate()) / 100;
             reporters[signal.reporter].bondAmount += reward;
             
             emit ReporterRewarded(signal.reporter, reward, "accurate signal");
@@ -265,7 +308,7 @@ contract ValidatorRegistry {
             // Reporter loses portion of bond (slash)
             // Challenger gets portion
             
-            uint256 slashed = (reporterBond * slashRate) / 100;
+            uint256 slashed = (reporterBond * _getSlashRate()) / 100;
             reporter.bondAmount -= slashed;
             
             _transferToken(winnerToken, address(this), dispute.challenger, slashed);
@@ -282,45 +325,81 @@ contract ValidatorRegistry {
     /**
      * @dev Add supported token for bonding
      */
-    function addSupportedToken(address token, uint256 minBond) external onlyOwner {
+    function addSupportedToken(address token, uint256 minBond) external onlyAdminOrRole {
         require(token != address(0), "zero token");
         require(!isTokenSupported[token], "already supported");
         
         supportedTokens.push(token);
         isTokenSupported[token] = true;
         tokenMinBond[token] = minBond;
+        emit AdminParameterUpdated("addToken", uint256(uint160(token)));
     }
     
     /**
      * @dev Set arbitrator address
      */
-    function setArbitrator(address newArbitrator) external onlyOwner {
+    function setArbitrator(address newArbitrator) external onlyAdminOrRole {
         require(newArbitrator != address(0), "zero arbitrator");
         arbitrator = newArbitrator;
+        _grantRole(ARBITRATOR_ROLE, newArbitrator);
+        emit AdminParameterUpdated("arbitrator", uint256(uint160(newArbitrator)));
     }
     
     /**
      * @dev Set dispute period (how long to challenge signals)
      */
-    function setDisputePeriod(uint256 newPeriod) external onlyOwner {
+    function setDisputePeriod(uint256 newPeriod) external onlyAdminOrRole {
         require(newPeriod > 0, "period too short");
         disputePeriod = newPeriod;
+        emit AdminParameterUpdated("disputePeriod", newPeriod);
+    }
+    
+    /**
+     * @dev Get accuracy reward rate (unpacks from storage)
+     */
+    function accuracyRewardRate() external view returns (uint256) {
+        return _getAccuracyRewardRate();
+    }
+    
+    /**
+     * @dev Get slash rate (unpacks from storage)
+     */
+    function slashRate() external view returns (uint256) {
+        return _getSlashRate();
     }
     
     /**
      * @dev Set accuracy reward rate
      */
-    function setAccuracyRewardRate(uint256 newRate) external onlyOwner {
+    function setAccuracyRewardRate(uint256 newRate) external onlyAdminOrRole {
         require(newRate <= 100, "rate too high");
-        accuracyRewardRate = newRate;
+        uint256 currentSlashRate = _getSlashRate();
+        rewardAndSlashPacked = (currentSlashRate << 128) | newRate;
+        emit AdminParameterUpdated("accuracyRewardRate", newRate);
     }
     
     /**
      * @dev Set slash rate for false signals
      */
-    function setSlashRate(uint256 newRate) external onlyOwner {
+    function setSlashRate(uint256 newRate) external onlyAdminOrRole {
         require(newRate <= 100, "rate too high");
-        slashRate = newRate;
+        uint256 currentRewardRate = _getAccuracyRewardRate();
+        rewardAndSlashPacked = (newRate << 128) | currentRewardRate;
+        emit AdminParameterUpdated("slashRate", newRate);
+    }
+    
+    /**
+     * @dev Internal helper to get current accuracy reward rate
+     */
+    function _getAccuracyRewardRate() internal view returns (uint256) {
+        return rewardAndSlashPacked & RATE_MASK;
+    }
+    
+    /**
+     * @dev Internal helper to get current slash rate
+     */
+    function _getSlashRate() internal view returns (uint256) {
+        return rewardAndSlashPacked >> 128;
     }
     
     // ============ VIEWS ============
@@ -396,8 +475,6 @@ contract ValidatorRegistry {
             (bool success, ) = payable(to).call{value: amount}("");
             return success;
         } else {
-            // ERC20
-            // Note: In production, use SafeERC20
             (bool success, bytes memory data) = token.call(
                 abi.encodeWithSignature(
                     "transferFrom(address,address,uint256)",

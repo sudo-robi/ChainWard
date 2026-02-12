@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./SignalTypes.sol";
+import { SignalTypes } from "./SignalTypes.sol";
 
 /**
  * @title IChainWardResponder
@@ -72,12 +72,16 @@ contract ResponderRegistry {
     event ResponderDisabled(address indexed responder, string reason);
     
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOnlyOwner();
         _;
     }
     
     constructor() {
         owner = msg.sender;
+    }
+
+    function _checkOnlyOwner() internal view {
+        require(msg.sender == owner, "only owner");
     }
     
     /**

@@ -1,0 +1,10 @@
+{
+  "chainId": 421614,
+  "enabled": true,
+  "dryRun": true,
+  "selectedActions": ["PAUSE_SEQUENCER", "FAILOVER"],
+  "blockLagThreshold": 60,
+  "sequencerPauseAddress": "0x0000000000000000000000000000000000000000",
+  "failoverControllerAddress": "0x0000000000000000000000000000000000000000",
+  "bridgeLockAddress": "0x0000000000000000000000000000000000000000"
+}

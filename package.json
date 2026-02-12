@@ -2,17 +2,35 @@
   "name": "chainward-reporter",
   "version": "0.1.0",
   "description": "Minimal reporter CLI to submit heartbeats and query incidents",
-  "main": "scripts/report.js",
+  "main": "scripts/report-secure.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
-    "report": "node scripts/report.js",
-    "deploy": "node scripts/deploy.js",
+    "report": "node scripts/report-secure.js",
+    "deploy": "node scripts/deploy-secure.js",
     "query": "node scripts/query.js",
     "cli": "node scripts/cli.js",
-    "auto-report": "node scripts/auto_report.js"
+    "auto-report": "node scripts/auto_report.js",
+    "lint": "eslint scripts/*.js",
+    "forge:build": "forge build",
+    "forge:test": "forge test",
+    "forge:script": "forge script script/Deploy.s.sol --rpc-url \"$RPC_URL\" --private-key \"$PRIVATE_KEY\" --broadcast",
+    "deploy:responders": "node scripts/deploy-responder.js",
+    "deploy:governance": "node scripts/deploy-governance.js",
+    "deploy:rewards": "node scripts/deploy-rewards.js",
+    "security-check": "npm audit --audit-level=moderate"
   },
   "dependencies": {
-    "ethers": "^6.0.0",
-    "dotenv": "^16.0.0",
-    "chalk": "^5.0.0"
+    "@openzeppelin/contracts": "5.5.0",
+    "chalk": "^4.1.2",
+    "dotenv": "16.3.1",
+    "ethers": "6.8.0"
+  },
+  "devDependencies": {
+    "eslint": "8.53.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-plugin-import": "2.29.0"
   }
 }

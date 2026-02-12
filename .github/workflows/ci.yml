@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Foundry
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          source ~/.bashrc || true
+          foundryup
+      - name: Run tests
+        run: forge test --no-match-contract "Benchmark*" -vv
+      - name: Run Slither (dockerized)
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" trailofbits/slither:latest /bin/sh -c "slither /src || true"

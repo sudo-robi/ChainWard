@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { ethers } = require('ethers');
 
 async function main() {
@@ -13,8 +14,50 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(RPC);
   const wallet = new ethers.Wallet(PK, provider);
 
-  const monitorAddress = process.env.MONITOR_ADDRESS;
+  const incidentManagerAddress = process.env.INCIDENT_MANAGER_ADDRESS;
   const chainId = Number(process.env.CHAIN_ID || '1');
+
+  // Check for simulation flags
+  const args = process.argv.slice(2);
+  const simulateIdx = args.indexOf('--simulate');
+
+  if (simulateIdx !== -1 && args[simulateIdx + 1]) {
+    const incidentType = args[simulateIdx + 1];
+
+    if (!incidentManagerAddress) {
+      console.error('Set INCIDENT_MANAGER_ADDRESS in .env');
+      process.exit(1);
+    }
+
+    console.log(`Simulating incident: ${incidentType}`);
+
+    const IncidentAbi = [
+      'function reportIncident(string calldata incidentType) external returns (uint256)'
+    ];
+
+    const incidentManager = new ethers.Contract(incidentManagerAddress, IncidentAbi, wallet);
+
+    try {
+      console.log(`Reporting incident: ${incidentType}`);
+
+      const tx = await incidentManager.reportIncident(incidentType);
+      console.log('Incident reported tx:', tx.hash);
+      await tx.wait();
+      console.log('Incident confirmed');
+      process.exit(0);
+    } catch (e) {
+      if (e.code === 'INSUFFICIENT_FUNDS') {
+        console.error('Error: Insufficient funds in wallet to report incident.');
+      } else if (e.message.includes('execution reverted')) {
+        console.error('Error: Wallet does not have REPORTER_ROLE. Please use the authorized reporter wallet.');
+      } else {
+        console.error('Error reporting incident:', e.message || e);
+      }
+      process.exit(1);
+    }
+  }
+
+  const monitorAddress = process.env.MONITOR_ADDRESS;
   if (!monitorAddress) {
     console.error('Set MONITOR_ADDRESS in .env');
     process.exit(1);

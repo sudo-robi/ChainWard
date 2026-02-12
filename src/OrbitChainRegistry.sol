@@ -39,8 +39,12 @@ contract OrbitChainRegistry {
     event OperatorTransferAccepted(uint256 indexed chainId, address indexed newOperator);
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOnlyOwner();
         _;
+    }
+
+    function _checkOnlyOwner() internal view {
+        require(msg.sender == owner, "only owner");
     }
 
     constructor() {

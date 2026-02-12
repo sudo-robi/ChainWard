@@ -267,7 +267,7 @@ SignalTypes (12 types total)
 │   └── FRAUD_PROOF_ACCEPTED
 │       └─ Detection: STATE ROOT IS WRONG (critical!)
 │
-├── BRIDGING & EXIT (Can users escape?)
+├── BRIDGING and EXIT (Can users escape?)
 │   ├── MESSAGE_PASSING
 │   │   └─ Detection: Cross-chain messages flowing
 │   └── WITHDRAWAL_PROCESSED

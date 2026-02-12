@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { ethers } = require('ethers');
 const chalk = require('chalk');
 
@@ -18,25 +19,23 @@ async function main() {
   const cmd = process.argv[2];
   if (!cmd) return usage();
 
-  const RPC = process.env.RPC_URL || 'http://127.0.0.1:8545';
+  const RPC = process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
   const PK = process.env.PRIVATE_KEY;
   const provider = new ethers.JsonRpcProvider(RPC);
   const wallet = PK ? new ethers.Wallet(PK, provider) : null;
 
-  const registryAddress = process.env.REGISTRY_ADDRESS;
-  const monitorAddress = process.env.MONITOR_ADDRESS;
+  const registryAddress = process.env.REGISTRY_ADDRESS || '0xaE5e3ED9f017c5d81E7F52aAF04ff11c4f6a1f1A';
+  const monitorAddress = process.env.MONITOR_ADDRESS || '0xBF3882E40495D862c2C9A5928362a7707Df7da5D';
   if (!registryAddress || !monitorAddress) {
     console.log(chalk.yellow('Warning: set REGISTRY_ADDRESS and MONITOR_ADDRESS in .env for full functionality'));
   }
 
   const RegistryAbi = [
-    'function registerChain(uint256,address,string,uint256)',
+    'function registerChain(uint256,address,uint256,uint256,string)',
     'function depositBond(uint256) payable',
     'function withdrawBond(uint256,uint256)',
     'function setChainMonitor(uint256,address)',
-    'function getOperator(uint256) view returns (address)',
-    'function getHeartbeatThreshold(uint256) view returns (uint256)',
-    'function getBond(uint256) view returns (uint256)'
+    'function getChain(uint256) view returns (tuple(address operator, address pendingOperator, uint256 operatorTransferTime, uint256 expectedBlockTime, uint256 maxBlockLag, bool isActive, string name))'
   ];
   const MonitorAbi = [
     'function submitHeartbeat(uint256,uint256,uint256)'
@@ -49,62 +48,42 @@ async function main() {
     if (!wallet) { console.error('PRIVATE_KEY required'); process.exit(1); }
     const chainId = Number(process.argv[3]);
     const operator = process.argv[4];
-    const threshold = Number(process.argv[5]);
+    const expectedBlockTime = Number(process.argv[5] || 12); // Default 12s
+    const maxBlockLag = Number(process.argv[6] || 60);       // Default 60s
+    const name = process.argv[7] || `Chain-${chainId}`;
+
     console.log(chalk.blue('Registering chain'), chainId);
-    const tx = await registry.registerChain(chainId, operator, 'ipfs://meta', threshold);
+    // registerChain(chainId, operator, expectedBlockTime, maxBlockLag, name)
+    const tx = await registry.registerChain(chainId, operator, expectedBlockTime, maxBlockLag, name);
     console.log(chalk.gray('tx'), tx.hash);
     await tx.wait();
     console.log(chalk.green('registered'));
     return;
   }
 
-  if (cmd === 'deposit') {
-    if (!wallet) { console.error('PRIVATE_KEY required'); process.exit(1); }
-    const chainId = Number(process.argv[3]);
-    const amount = process.argv[4];
-    const wei = ethers.parseEther(amount);
-    const tx = await registry.connect(wallet).depositBond(chainId, { value: wei });
-    console.log(chalk.gray('tx'), tx.hash);
-    await tx.wait();
-    console.log(chalk.green('deposited'));
-    return;
-  }
+  // ... (deposit/withdraw/monitor-set removed/commented if likely invalid too, checking deps) ...
+  // Keeping deposit/withdraw/monitor-set for now but might fail if they don't exist. 
+  // Checking contract... OrbitChainRegistry.sol DOES NOT have depositBond/withdrawBond/setChainMonitor!
+  // It only has: initiateOwnerTransfer, acceptOwnerTransfer, cancelOwnerTransfer, registerChain, updateThresholds, deactivateChain, initiateOperatorTransfer...
 
-  if (cmd === 'withdraw') {
-    if (!wallet) { console.error('PRIVATE_KEY required'); process.exit(1); }
-    const chainId = Number(process.argv[3]);
-    const amount = process.argv[4];
-    const wei = ethers.parseEther(amount);
-    const tx = await registry.connect(wallet).withdrawBond(chainId, wei);
-    console.log(chalk.gray('tx'), tx.hash);
-    await tx.wait();
-    console.log(chalk.green('withdrawn'));
-    return;
-  }
-
-  if (cmd === 'monitor-set') {
-    if (!wallet) { console.error('PRIVATE_KEY required'); process.exit(1); }
-    const chainId = Number(process.argv[3]);
-    const mon = process.argv[4];
-    const tx = await registry.connect(wallet).setChainMonitor(chainId, mon);
-    console.log(chalk.gray('tx'), tx.hash);
-    await tx.wait();
-    console.log(chalk.green('monitor set'));
+  if (cmd === 'deposit' || cmd === 'withdraw' || cmd === 'monitor-set') {
+    console.log(chalk.red('Command not supported by current Registry contract.'));
     return;
   }
 
   if (cmd === 'show') {
     const chainId = Number(process.argv[3] || '1');
-    const op = await registry.getOperator(chainId);
-    const thr = await registry.getHeartbeatThreshold(chainId);
-    const bond = await registry.getBond(chainId);
-    console.log(chalk.cyan('Chain'), chainId);
-    console.log(' operator:', op);
-    console.log(' threshold:', thr.toString());
-    console.log(' bond (wei):', bond.toString());
-    // print timeline using query script logic
-    const q = require('./query');
-    // call as a module if available; otherwise just return
+    try {
+      const chain = await registry.getChain(chainId);
+      console.log(chalk.cyan('Chain'), chainId);
+      console.log(' Name:', chain.name);
+      console.log(' Operator:', chain.operator);
+      console.log(' Active:', chain.isActive);
+      console.log(' Expected Block Time:', chain.expectedBlockTime.toString());
+      console.log(' Max Block Lag:', chain.maxBlockLag.toString());
+    } catch (e) {
+      console.log(chalk.red('Chain not found or error fetching:'), e.message);
+    }
     return;
   }
 

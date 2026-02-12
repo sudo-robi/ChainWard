@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./OrbitChainRegistry.sol";
-import "./IncidentManager.sol";
+import { OrbitChainRegistry } from "./OrbitChainRegistry.sol";
+import { IncidentManager } from "./IncidentManager.sol";
 
 /**
  * @title HealthReporter
@@ -43,8 +43,12 @@ contract HealthReporter {
     );
 
     modifier onlyReporter() {
-        require(msg.sender == reporter, "only reporter");
+        _checkOnlyReporter();
         _;
+    }
+
+    function _checkOnlyReporter() internal view {
+        require(msg.sender == reporter, "only reporter");
     }
 
     constructor(address _registry, address _incidents, address _reporter) {

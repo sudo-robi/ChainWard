@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./SignalTypes.sol";
+import { SignalTypes } from "./SignalTypes.sol";
 
 /**
  * @title IChainValidator
@@ -95,12 +95,16 @@ contract ChainTypeRegistry {
     event ValidatorImplementationSet(uint8 indexed chainType, address indexed validator);
     
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOnlyOwner();
         _;
     }
     
     constructor() {
         owner = msg.sender;
+    }
+
+    function _checkOnlyOwner() internal view {
+        require(msg.sender == owner, "only owner");
     }
     
     // ============ CHAIN TYPE REGISTRATION ============
@@ -258,7 +262,7 @@ contract OrbitValidator is IChainValidator {
     mapping(uint8 => uint256) public thresholds;
     
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOnlyOwner();
         _;
     }
     
@@ -273,11 +277,15 @@ contract OrbitValidator is IChainValidator {
         thresholds[uint8(SignalTypes.SignalType.TXN_CENSORSHIP)] = 1;
     }
     
+    function _checkOnlyOwner() internal view {
+        require(msg.sender == owner, "only owner");
+    }
+    
     function validateSignal(
-        uint256 chainId,
+        uint256 /*chainId*/,
         SignalTypes.SignalType signalType,
         bytes calldata data
-    ) external view override returns (bool isValid, string memory reason) {
+    ) external pure override returns (bool isValid, string memory reason) {
         // Orbit-specific validation logic
         
         if (signalType == SignalTypes.SignalType.BLOCK_PRODUCED) {
@@ -342,7 +350,7 @@ contract OPStackValidator is IChainValidator {
     mapping(uint8 => uint256) public thresholds;
     
     modifier onlyOwner() {
-        require(msg.sender == owner, "only owner");
+        _checkOwnerLocal();
         _;
     }
     
@@ -354,11 +362,15 @@ contract OPStackValidator is IChainValidator {
         thresholds[uint8(SignalTypes.SignalType.BATCH_CONFIRMED)] = 2 hours;
     }
     
+    function _checkOwnerLocal() internal view {
+        require(msg.sender == owner, "only owner");
+    }
+    
     function validateSignal(
-        uint256 chainId,
+        uint256 /*chainId*/,
         SignalTypes.SignalType signalType,
         bytes calldata data
-    ) external view override returns (bool isValid, string memory reason) {
+    ) external pure override returns (bool isValid, string memory reason) {
         if (signalType == SignalTypes.SignalType.BATCH_POSTED) {
             (bool batchPosted) = abi.decode(data, (bool));
             if (!batchPosted) {
