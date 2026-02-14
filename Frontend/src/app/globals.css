@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  /* Dark Theme (Default) */
+  --background: #020617; /* Service Level Agreementte 950 */
+  --foreground: #f8fafc; /* Service Level Agreementte 50 */
+  --card-bg: #0f172a;    /* Service Level Agreementte 900 */
+  --card-border: #1e293b; /* Service Level Agreementte 800 */
+  --primary: #0ea5e9;    /* Sky 500 */
+  --primary-foreground: #f0f9ff;
+  --secondary: #64748b;
+  --secondary-foreground: #f8fafc;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+body.light {
+  /* Light Theme */
+  --background: #f8fafc; /* Service Level Agreementte 50 */
+  --foreground: #020617; /* Service Level Agreementte 950 */
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0; /* Service Level Agreementte 200 */
+  --primary: #0284c7;    /* Sky 600 */
+  --primary-foreground: #ffffff;
+  --secondary: #94a3b8;
+  --secondary-foreground: #0f172a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* ========== Accessibility Enhancements ========== */
+
+/* Screen reader only class - visible only to assistive technologies */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Make sr-only content visible when focused (e.g., skip links) */
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Enhanced focus indicators for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users with vestibular disorders or motion sensitivity */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable specific animations */
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support for Windows High Contrast */
+@media (prefers-contrast: high) {
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Ensure minimum touch target size for mobile accessibility */
+@media (pointer: coarse) {
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

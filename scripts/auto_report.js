@@ -241,7 +241,8 @@ async function main() {
 
   const MonitorInterface = new ethers.Interface([
     'function submitHealthSignal(uint256,uint256,uint256,uint256,bool,uint256,uint256,bool,string)',
-    'function lastBlockNumber(uint256) view returns (uint256)'
+    'function lastBlockNumber(uint256) view returns (uint256)',
+    'function lastSignalTime(uint256) view returns (uint256)'
   ]);
 
   let seq = 1;
@@ -263,6 +264,33 @@ async function main() {
       console.log(`\nSubmitting health signal #${seq}...`);
       const now = Math.floor(Date.now() / 1000);
 
+      // Pre-check: read on-chain lastBlockNumber and lastSignalTime to avoid common require failures
+      try {
+        const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+        const monitor = new ethers.Contract(reporterAddress, MonitorInterface, provider);
+        const onchainLastBlock = await monitor.lastBlockNumber(chainId).catch(() => 0n);
+        const onchainLastSignal = await monitor.lastSignalTime(chainId).catch(() => 0n);
+        console.log('On-chain lastBlockNumber:', onchainLastBlock.toString());
+        console.log('On-chain lastSignalTime:', onchainLastSignal.toString());
+
+        // If our synthetic seq would not advance the block number, adjust it
+        if (BigInt(seq) <= onchainLastBlock) {
+          seq = Number(onchainLastBlock) + 1;
+          console.log('Adjusted seq to', seq);
+        }
+
+        // Respect on-chain rate limit if a signal was submitted recently
+        if (onchainLastSignal > 0n) {
+          const elapsed = BigInt(now) - onchainLastSignal;
+          if (elapsed < 30n) {
+            console.warn(`Skipping submit: rate limited by on-chain lastSignalTime, only ${elapsed}s elapsed`);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Pre-check failed:', e.message || e);
+      }
+
       // function submitHealthSignal(chainId, blockNumber, blockTimestamp, sequencerNumber, healthy, l1BatchNum, l1BatchTime, bridgeHealthy, details)
       const data = MonitorInterface.encodeFunctionData('submitHealthSignal', [
         chainId,
@@ -275,6 +303,19 @@ async function main() {
         true, // bridgeHealthy
         `Heartbeat signal #${seq}`
       ]);
+
+      // Attempt an eth_call simulation to get a revert reason before sending
+      try {
+        const callRes = await rpcCall('eth_call', [{ to: reporterAddress, data: data, from: wallet.address }, 'latest']);
+        if (callRes && callRes !== '0x') {
+          // Non-empty return means call succeeded; continue
+        }
+      } catch (simErr) {
+        console.error('Simulation (eth_call) failed:', simErr.message || simErr);
+        // Print suggestion and skip this tick
+        console.error('Skipping send due to simulation failure. Review parameters and on-chain state.');
+        return;
+      }
 
       const txHash = await sendTx(reporterAddress, data, wallet);
       console.log('Tx sent:', txHash);
