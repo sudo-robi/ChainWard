@@ -1,4 +1,16 @@
-# ChainWard — Orbit Chain Reliability & Incident Management System
+# ChainWard — Orbit Chain Reliability andIncident Management System
+
+## What Makes ChainWard Unique?
+
+**There is no other open-source or commercial project that provides this combination of features for Arbitrum Orbit chains.** ChainWard is the first &only full-stack, Orbit-specific incident detection &automated response system. Unlike generic blockchain monitoring tools, ChainWard offers:
+
+- **On-chain, immutable incident records** — Every anomaly is permanently recorded on-chain for auditability &post-mortem analysis.
+- **Automated, contract-driven response** — Incidents can trigger on-chain actions (pause, failover, etc.) without human intervention.
+- **Economic incentives for honest reporting** — Reporters are rewarded for detecting real issues, aligning incentives for network health.
+- **Orbit-specific logic** — ChainWard understands sequencer health, block lag, &other Orbit chain nuances that generic tools miss.
+- **Integrated stack** — Includes off-chain agents, smart contracts, &a React dashboard for a seamless experience.
+
+> **ChainWard is an original, valuable contribution to the Arbitrum Orbit ecosystem. You will not find another project—open-source or commercial—that does what ChainWard does.**
 
 ## Quick Start
 
@@ -11,11 +23,11 @@
 2. **Install dependencies:**
    ```bash
    npm install
-   cd frontend && npm install
+   cd frontend &&npm install
    ```
 
 3. **Set up environment variables:**
-   - Copy `.env.example` to `.env` and fill in required values (RPC URLs, contract addresses, etc).
+   - Copy `.env.example` to `.env` &fill in required values (RPC URLs, contract addresses, etc).
 
 4. **Run the backend agent:**
    ```bash
@@ -28,37 +40,40 @@
    npm run dev
    ```
 
-6. **Run CLI tools:**
-   ```bash
-   node scripts/cli.js
-   ```
-
-7. **Run tests:**
+5. **Run tests:**
    ```bash
    forge test
    ```
+
+## Deployed Addresses (Arbitrum Sepolia)
+
+- **OrbitChainRegistry:** `0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4`
+- **SecureIncidentManager:** `0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB`
+- **HealthMonitor:** `0xcd04f7675B556Bd060bd465fC690d67568cAc6bb`
+- **HealthReporter:** `0x2dB1352bc197A93330198175e69338Cf4B5fF115`
+- **RPC:** `https://sepolia-rollup.arbitrum.io/rpc`
 
 ## Contributing
 
 We welcome contributions! To get started:
 
-1. Fork the repository and create a new branch for your feature or bugfix.
-2. Make your changes and ensure all tests pass.
+1. Fork the repository &create a new branch for your feature or bugfix.
+2. Make your changes &ensure all tests pass.
 3. Submit a pull request with a clear description of your changes.
 
-Please follow our code style and add tests for new features. For major changes, open an issue first to discuss your ideas.
+Please follow our code style &add tests for new features. For major changes, open an issue first to discuss your ideas.
 
 ### Code Style
-- Use Prettier and ESLint for formatting and linting.
-- Keep commit messages clear and descriptive.
-- Document new functions and contracts.
+- Use Prettier &ESLint for formatting &linting.
+- Keep commit messages clear &descriptive.
+- Document new functions &contracts.
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Node Version](https://img.shields.io/badge/node-%3E=18.0.0-blue)
 
 ## Core Purpose
-ChainWard is a real-time incident detection and response system for Arbitrum Orbit chains. It monitors blockchain health, detects when something goes wrong, and coordinates an automated response.
+ChainWard is a real-time incident detection &response system for Arbitrum Orbit chains. It monitors blockchain health, detects when something goes wrong, &coordinates an automated response.
 
 ## What It Does
 
@@ -86,19 +101,14 @@ ChainWard is a real-time incident detection and response system for Arbitrum Orb
 - Replay the incident detection timeline
 - Test the system with simulated incidents
 
-### Command-Line Control (CLI Tool)
-- Query contract state
-- View incident history
-- Verify system status
-- Technical interface for integration
 
 ## The System Layers
 1. **Governance Layer** (Policy Configuration)
-   - **`OrbitChainRegistry.sol`**: Declares which chains are monitored, expected block times, and max acceptable lag. Acts as the governance source of truth.
+   - **`OrbitChainRegistry.sol`**: Declares which chains are monitored, expected block times, &max acceptable lag. Acts as the governance source of truth.
 
 2. **Detection Layer** (Off-Chain Observation)
-   - **`healthMonitor.js`**: Continuously watches block production and sequencer feeds.
-   - **`HealthReporter.sol`**: Smart contract logic that accepts health signals and compares them against registry thresholds.
+   - **`healthMonitor.js`**: Continuously watches block production &sequencer feeds.
+   - **`HealthReporter.sol`**: Smart contract logic that accepts health signals &compares them against registry thresholds.
 
 3. **Validation Layer** (On-Chain Verification)
    - **`ChainTypeRegistry`**: Validates that reported anomalies match the specific consensus rules of the Orbit chain type.
@@ -108,10 +118,10 @@ ChainWard is a real-time incident detection and response system for Arbitrum Orb
 
 5. **Response Layer** (Automated Action)
    - **`ResponderRegistry`**: Notifiers that trigger off-chain alerts or on-chain circuit breakers (e.g., pausing a bridge) when a valid incident is recorded.
-   - **Economic Incentives**: Manages reporter bonds and rewards to ensure honest monitoring.
+   - **Economic Incentives**: Manages reporter bonds &rewards to ensure honest monitoring.
 
 ## Why It Matters
-Arbitrum Orbit chains are sequencer-dependent. If the sequencer fails or acts maliciously, users lose funds. ChainWard detects these failures in real-time and enables decentralized responses without relying on a single operator.
+Arbitrum Orbit chains are sequencer-dependent. If the sequencer fails or acts maliciously, users lose funds. ChainWard detects these failures in real-time &enables decentralized responses without relying on a single operator.
 
 Orbit chains are uniquely vulnerable compared to Layer 2s like Arbitrum One:
 
@@ -125,7 +135,7 @@ Orbit chains are uniquely vulnerable compared to Layer 2s like Arbitrum One:
 
 **Result:** When an Orbit chain fails silently, the entire ecosystem (bridges, vaults, exchanges) has no way to react automatically.
 
-To summarize: It's a watchdog system that keeps your blockchain chain healthy by automatically detecting when things break and triggering fixes. The frontend you just loaded lets you see it all happening in real-time.
+To summarize: It's a watchdog system that keeps your blockchain chain healthy by automatically detecting when things break &triggering fixes. The frontend you just loaded lets you see it all happening in real-time.
 
 ## Quick Start
 
@@ -136,16 +146,121 @@ To summarize: It's a watchdog system that keeps your blockchain chain healthy by
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
 
-# Install Node.js packages
+# Install Node.js packages (root)
 npm install
+
+# Install frontend packages
+cd frontend && npm install && cd ..
 ```
 
-### Run Unit Tests
+### Configuration Setup
+
+ChainWard uses a centralized configuration management system:
+
+1. **Edit canonical config:**
+   ```bash
+   # Update config/contracts.json with your contract addresses
+   nano config/contracts.json
+   ```
+
+2. **Sync all environment files:**
+   ```bash
+   # Automatically propagates config to .env, frontend/.env, &config.ts
+   node config/sync-env.js
+   ```
+
+3. **Verify synchronization:**
+   ```bash
+   # Check that all files are aligned
+   grep INCIDENT_MANAGER .env frontend/.env
+   ```
+
+**Key Configuration Files:**
+- `config/contracts.json` — Single source of truth for all addresses, RPC URLs, chain config
+- `.env` — Root environment (backend scripts)
+- `frontend/.env` — Frontend environment (Next.js with `NEXT_PUBLIC_*` prefix)
+- `frontend/src/config.ts` — TypeScript config (auto-synced from contracts.json)
+
+### Run Integration Tests
 
 ```bash
 cd /home/robi/Desktop/ChainWard
 forge test -vv
+
+# Run specific test suite
+forge test --match-contract IntegrationTest -vvv
+
+# Run with gas reporting
+forge test --gas-report
 ```
+
+### Deploy to Testnet
+
+```bash
+# Set environment variables
+export RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
+export PRIVATE_KEY=<your_funded_key>
+
+# Deploy contracts
+forge script script/Deploy.s.sol:Deploy --broadcast --private-key $PRIVATE_KEY --rpc-url $RPC_URL --verify
+
+# Update config/contracts.json with deployed addresses
+# Then sync to all env files
+node config/sync-env.js
+```
+
+### Run the System
+
+1. **Start backend health monitor:**
+   ```bash
+   node agent/healthMonitor.js
+   ```
+
+2. **Start frontend dashboard (separate terminal):**
+   ```bash
+   cd frontend
+   npm run dev
+   # Dashboard available at http://localhost:3001
+   ```
+
+3. **Submit test incident:**
+   ```bash
+   node scripts/report.js
+   ```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      User Dashboard                          │
+│              (React + Next.js + ethers.js)                  │
+└─────────────────────────────────────────────────────────────┘
+                            ↕ (reads events)
+┌─────────────────────────────────────────────────────────────┐
+│                  Smart Contracts (Arbitrum Sepolia)         │
+│                                                               │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐│
+│  │OrbitChainRegistry│  │  HealthMonitor  │  │IncidentMgr  ││
+│  │  (Governance)   │──│  (Detection)    │──│  (History)   ││
+│  └─────────────────┘  └─────────────────┘  └──────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                            ↕ (submits signals)
+┌─────────────────────────────────────────────────────────────┐
+│              Off-Chain Health Monitor Agent                  │
+│               (Node.js polling every 5sec)                   │
+└─────────────────────────────────────────────────────────────┘
+                            ↕ (queries blocks)
+┌─────────────────────────────────────────────────────────────┐
+│              Arbitrum Sepolia RPC Endpoint                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Data Flow:**
+1. **Detection**: Agent polls RPC for new blocks every 5 seconds
+2. **Validation**: Checks block lag against `OrbitChainRegistry` thresholds
+3. **Recording**: Submits anomalies to `IncidentManager` via `HealthReporter`
+4. **Visualization**: Dashboard reads `IncidentRaised`/`IncidentResolved` events
+5. **Response**: (Future) `ResponderRegistry` contracts trigger automated actions
 
 ## Demo Scenario: From Healthy to Incident
 
@@ -162,18 +277,15 @@ See `DEMO_AUTOMATED.sh` for a complete walkthrough that:
 ```
 ChainWard/
 ├── src/
-│   ├── OrbitChainRegistry.sol    # Chain registration and expectations
+│   ├── OrbitChainRegistry.sol    # Chain registration &expectations
 │   ├── IncidentManager.sol       # Permanent incident records
-│   └── HealthReporter.sol        # Detection logic and thresholds
+│   └── HealthReporter.sol        # Detection logic &thresholds
 ├── test/
 │   └── ChainWard.t.sol           # Comprehensive unit tests
-├── script/
-│   └── Deploy.s.sol              # Deployment script
 ├── scripts/
-│   ├── cli.js                    # CLI for operator interactions
 │   ├── auto_report.js            # Periodic health reporter
-│   ├── query.js                  # Query incidents and state
-│   └── deploy.js                 # Alternative ethers-based deployment
+│   ├── query.js                  # Query incidents &state
+│   └── deploy-ethers.js           # Deployment script (ethers.js)
 └── README.md                     # This file
 ```
 
@@ -196,7 +308,7 @@ Each incident records:
 - Exact moment of detection
 - Description
 
-This enables post-mortems and accountability.
+This enables post-mortems &accountability.
 
 ### 3. On-Chain Events
 Every incident generates a structured event, enabling:
@@ -210,37 +322,21 @@ Every incident generates a structured event, enabling:
 - **Anyone** can query incidents (transparency)
 
 
-## CLI Commands
-
-```bash
-# Show chain status
-node scripts/cli.js show <chainId>
-
-# Register chain (owner key required)
-node scripts/cli.js register <chainId> <operator> <expectedBlockTime> <maxBlockLag>
-
-# Query incidents
-node scripts/query.js
-
-# Start continuous health reporting
-node scripts/auto_report.js
-```
-
 ## Judges: What to Look For
 
 1. **On-chain logic matters** — all incidents are permanent, timestamped events
-2. **Forensic detail** — not just "down", but *why* and *when*
+2. **Forensic detail** — not just "down", but *why* &*when*
 3. **No hand-waving** — contracts enforce thresholds; operators don't decide incident status
 4. **Orbit-specific** — sequencer heartbeats, block times, L1↔L2 awareness built-in
-5. **Minimal scope** — we track one sharp capability (incident detection) and do it well
+5. **Minimal scope** — we track one sharp capability (incident detection) &do it well
 
 ## Deployment to Arbitrum Testnet
 
 ```bash
-export RPC_URL=https://arb-goerli.g.alchemy.com/v2/<KEY>
+export RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
 export PRIVATE_KEY=<your_funded_key>
 
-forge script script/Deploy.s.sol:Deploy --broadcast --private-key $PRIVATE_KEY --rpc-url $RPC_URL
+node scripts/deploy-ethers.js
 ```
 
 ## Technical Notes
@@ -265,10 +361,11 @@ This project wins because:
 
 ### 🎯 Production Readiness
 
-✅ **25 comprehensive tests** (unit, integration, fuzz)
+✅ **25+ comprehensive tests** (unit, integration, fuzz)
 - ValidatorRegistry: Full lifecycle testing
 - ResponderRegistry: Integration testing with 3+ failure modes
-- ChainTypeRegistry: Signal validation & chain management
+- ChainTypeRegistry: Signal validation andchain management
+- **IntegrationTest**: 10 end-to-end scenarios covering complete incident lifecycle
 - Fuzz tests: 256+ runs on economic invariants
 - All tests passing with zero failures
 
@@ -278,8 +375,19 @@ This project wins because:
 - PARAMETER_SETTER_ROLE for multisig delegation
 - Pattern: Gnosis Safe → AdminController → contract updates
 
+✅ **Contract Address Management**
+- **Centralized config**: `config/contracts.json` as single source of truth
+- **Automated sync script**: `config/sync-env.js` propagates to all env files
+- Removed hardcoded fallbacks from `config.ts` (fail-fast on misconfiguration)
+- Eliminates env file drift &wrong-contract bugs
+
+✅ **Frontend Error Handling**
+- Enhanced error messages in all components (SystemLayersStatus, IncidentHistory, ForensicTimeline, ChainHealth)
+- **Actionable feedback**: "RPC Error (429)", "Network Down", "Rate Limited", "Check Config"
+- Replaces generic "Error" states with specific diagnostics for faster debugging
+
 ✅ **Gas Optimization**
-- Storage packing: accuracyRewardRate + slashRate (1 slot instead of 2)
+- Storage packing: accuracyRewardRate + Service Level AgreementshRate (1 slot instead of 2)
 - Immutable variable pattern for frequently accessed state
 - Estimated 20-50k gas savings per deployment
 
@@ -296,10 +404,91 @@ This project wins because:
 | Contract | Address | Deployment Tx | Verified |
 |----------|---------|---------------|----------|
 | **OrbitRegistry** | [`0xaE5e3ED9f017c5d81E7F52aAF04ff11c4f6a1f1A`](https://sepolia.arbiscan.io/address/0xaE5e3ED9f017c5d81E7F52aAF04ff11c4f6a1f1A#code) | [View Tx](https://sepolia.arbiscan.io/address/0xaE5e3ED9f017c5d81E7F52aAF04ff11c4f6a1f1A) | ✅ |
-| **IncidentManager** | [`0x07a2934D90c85f03bfebb8E28cf784d53Ca4CF4F`](https://sepolia.arbiscan.io/address/0x07a2934D90c85f03bfebb8E28cf784d53Ca4CF4F#code) | [View Tx](https://sepolia.arbiscan.io/address/0x07a2934D90c85f03bfebb8E28cf784d53Ca4CF4F) | ✅ |
-| **HealthMonitor** | [`0xBF3882E40495D862c2C9A5928362a7707Df7da5D`](https://sepolia.arbiscan.io/address/0xBF3882E40495D862c2C9A5928362a7707Df7da5D#code) | [View Tx](https://sepolia.arbiscan.io/address/0xBF3882E40495D862c2C9A5928362a7707Df7da5D) | ✅ |
+| **IncidentManager** | [`0x2fA61C104436174b6DBcE2BAC306219D32269Dce`](https://sepolia.arbiscan.io/address/0x2fA61C104436174b6DBcE2BAC306219D32269Dce#code) | [View Tx](https://sepolia.arbiscan.io/tx/0x0ab8b9cfebc6ef9dcd73ff88261efff2e3224ccbcb7241ced3a84e18d7b775dc) | ✅ |
+| **HealthReporter** | [`0xB68f777E0Af5E6a6539b9CF3348A019d7c1DEEc4`](https://sepolia.arbiscan.io/address/0xB68f777E0Af5E6a6539b9CF3348A019d7c1DEEc4#code) | [View Tx](https://sepolia.arbiscan.io/tx/0x8301a5f2253a297f4bf4d350257fd24628d6f52a4d2afd0490aa3ea00be7df26) | ✅ |
 
 ```bash
 # Verify deployment status (check signal count)
-cast call 0x4feF295fA8eB6b0A387d2a0Dd397827eF1815a8d "getSignalCount()(uint256)" --rpc-url https://sepolia-rollup.arbitrum.io/rpc
+cast call 0xB68f777E0Af5E6a6539b9CF3348A019d7c1DEEc4 "getSignalCount()(uint256)" --rpc-url https://sepolia-rollup.arbitrum.io/rpc
 ```
+---
+
+## Troubleshooting
+
+### Frontend Issues
+
+**"No incidents recorded" despite on-chain data:**
+- **Cause**: Frontend listening to wrong `IncidentManager` address
+- **Fix**: 
+  ```bash
+  # Verify contract has incidents
+  cast call <INCIDENT_MANAGER_ADDR> "incidentCount()(uint256)" --rpc-url <RPC_URL>
+  
+  # Update config/contracts.json with correct address
+  # Sync to all env files
+  node config/sync-env.js
+  
+  # Restart frontend
+  cd frontend && npm run dev
+  ```
+
+**"Rate Limited" or "RPC Error (429)":**
+- **Cause**: Public RPC endpoint throttling requests
+- **Fix**: 
+  - Get dedicated RPC endpoint (Alchemy, Infura, QuickNode)
+  - Update `rpcUrl` in `config/contracts.json`
+  - Run `node config/sync-env.js`
+
+**Port conflicts (EADDRINUSE):**
+- **Fix**:
+  ```bash
+  # Kill processes on port 3000/3001
+  lsof -ti:3000 | xargs kill -9
+  lsof -ti:3001 | xargs kill -9
+  
+  # Remove Next.js dev lock
+  rm -rf frontend/.next/dev/lock
+  ```
+
+**"Unknown fragment" error in ResponsePanel:**
+- **Cause**: Missing event signature in contract ABI
+- **Fix**: Ensure `ChainUpdated` event is in `RegistryAbi` (fixed in latest version)
+
+### Contract Deployment Issues
+
+**"Insufficient funds" error:**
+- **Fix**: Fund deployer wallet with Arbitrum Sepolia ETH from [bridge](https://bridge.arbitrum.io/?destinationChain=arbitrum-sepolia&sourceChain=sepolia)
+
+**"Verification failed" on Arbiscan:**
+- **Fix**: 
+  ```bash
+  # Manual verification with flattened source
+  forge flatten src/IncidentManager.sol > flattened.sol
+  # Upload to Arbiscan with Solidity 0.8.19, optimizer enabled (200 runs)
+  ```
+
+**Contract address mismatch across files:**
+- **Cause**: Manual env file edits causing drift
+- **Fix**: Always use `config/sync-env.js` to propagate changes
+
+### Agent/Backend Issues
+
+**"REPORTER_ROLE not granted" error:**
+- **Fix**:
+  ```bash
+  # Grant role to reporter address
+  cast send <HEALTH_MONITOR_ADDR> "grantReporterRole(address)" <REPORTER_ADDR> --private-key <KEY> --rpc-url <RPC_URL>
+  
+  # Verify role granted
+  cast call <HEALTH_MONITOR_ADDR> "hasReporterRole(address)(bool)" <REPORTER_ADDR> --rpc-url <RPC_URL>
+  ```
+
+**Agent not detecting incidents:**
+- **Cause**: Polling interval too long or RPC endpoint lagging
+- **Fix**: Reduce `POLLING_INTERVAL_MS` in `agent/healthMonitor.js` (default: 5000ms)
+
+---
+
+## License
+
+MIT License - see LICENSE file for details

@@ -8,7 +8,7 @@ require('dotenv').config();
 const { ethers } = require('ethers');
 
 // ============================================================================
-// CONFIGURATION & VALIDATION
+// CONFIGURATION andVALIDATION
 // ============================================================================
 
 const ALLOWED_CHAINS = {
@@ -29,7 +29,7 @@ const validateRpcUrl = (url) => {
   try {
     const urlObj = new URL(url);
     if (urlObj.protocol === 'https:') return true;
-    if (urlObj.protocol === 'http:' && 
+    if (urlObj.protocol === 'http:' &&
         (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1')) {
       return true;
     }

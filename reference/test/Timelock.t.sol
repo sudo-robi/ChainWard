@@ -53,8 +53,8 @@ contract AdminControlTest is Test {
     function testOwnerHasParameterSetterRole() public {
         // Owner should have PARAMETER_SETTER_ROLE from constructor
         vm.prank(owner);
-        registry.setSlashRate(75);
-        assertEq(registry.slashRate(), 75);
+        registry.setService Level AgreementshRate(75);
+        assertEq(registry.Service Level AgreementshRate(), 75);
     }
     
     function testOwnerCanSetAccuracyRate() public {
@@ -82,13 +82,13 @@ contract AdminControlTest is Test {
         // For testing, we simulate this by having owner make all changes
         vm.startPrank(owner);
         
-        registry.setSlashRate(60);
+        registry.setService Level AgreementshRate(60);
         registry.setAccuracyRewardRate(8);
         registry.setDisputePeriod(14 days);
         
         vm.stopPrank();
         
-        assertEq(registry.slashRate(), 60);
+        assertEq(registry.Service Level AgreementshRate(), 60);
         assertEq(registry.accuracyRewardRate(), 8);
         assertEq(registry.disputePeriod(), 14 days);
     }

@@ -25,9 +25,9 @@
 │  Validator Challenge ─────┤                                          │
 │                           ├──► Arbitration: 3 days                   │
 │  Arbitrator Decision ─────┤                                          │
-│                           └──► Slash/Reward Logic                    │
+│                           └──► Service Level Agreementsh/Reward Logic                    │
 │                                                                      │
-│  Outcome: Reporter slashed if false, rewarded if true                │
+│  Outcome: Reporter Service Level Agreementshed if false, rewarded if true                │
 └────────────────────────────────┬─────────────────────────────────────┘
                                  │
                    recordSignal(reporter, chainId, type)
@@ -177,11 +177,11 @@ WITHOUT CHAINWARD:
 │ 1. Sees suspicious signal                                      │
 │ 2. Stakes $10,000 to challenge                                │
 │ 3. Arbitrator reviews data                                     │
-│ 4. Validator wins (50% slash)                                 │
+│ 4. Validator wins (50% Service Level Agreementsh)                                 │
 │                                                                 │
-│ Payoff: $5,000 (50% of reporter's slash)                      │
+│ Payoff: $5,000 (50% of reporter's Service Level Agreementsh)                      │
 │                                                                 │
-│ Incentive: "Find liars and earn"                              │
+│ Incentive: "Find liars &earn"                              │
 └─────────────────────────────────────────────────────────────────┘
                         ▲
                         │ decides truth
@@ -267,7 +267,7 @@ SignalTypes (12 types total)
 │   └── FRAUD_PROOF_ACCEPTED
 │       └─ Detection: STATE ROOT IS WRONG (critical!)
 │
-├── BRIDGING and EXIT (Can users escape?)
+├── BRIDGING &EXIT (Can users escape?)
 │   ├── MESSAGE_PASSING
 │   │   └─ Detection: Cross-chain messages flowing
 │   └── WITHDRAWAL_PROCESSED
@@ -345,7 +345,7 @@ UNRECOVERABLE  Emergency shutdown      Full system halt on chain
 └─────────────────────────────────────┘
            ▼
 ┌─────────────────────────────────────┐
-│ ECONOMIC SECURITY (Slash bonds)     │
+│ ECONOMIC SECURITY (Service Level Agreementsh bonds)     │
 │ ✅ False signals = lose money       │
 │ ✅ 7-day dispute window             │
 │ ✅ Arbitrator override              │

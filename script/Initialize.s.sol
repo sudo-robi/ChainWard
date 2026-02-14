@@ -2,8 +2,7 @@
 pragma solidity ^0.8.19;
 
 import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
-import { OrbitChainRegistry } from "../src/OrbitChainRegistry.sol";
+import { OrbitChainRegistry } from "src/registries/OrbitChainRegistry.sol";
 
 contract Initialize is Script {
     function run() external {
@@ -22,12 +21,6 @@ contract Initialize is Script {
 
         OrbitChainRegistry registry = OrbitChainRegistry(registryAddr);
         
-        console.log("Registering chain:", chainName);
-        console.log("Chain ID:", chainId);
-        console.log("Operator:", operator);
-        console.log("Expected Block Time:", expectedBlockTime, "ms");
-        console.log("Max Block Lag:", maxBlockLag, "blocks");
-        
         registry.registerChain(
             chainId,
             operator,
@@ -35,8 +28,6 @@ contract Initialize is Script {
             maxBlockLag,
             chainName
         );
-        
-        console.log("Chain registered successfully!");
 
         vm.stopBroadcast();
     }

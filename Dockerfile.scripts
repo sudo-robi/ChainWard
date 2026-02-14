@@ -1,0 +1,14 @@
+# Scripts Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+# Install essentials for node-gyp if needed
+RUN apk add --no-cache python3 make g++
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+# Final artifacts for the scripts should be in /app
+
+# The entrypoint will be overridden in docker-compose for different services
+CMD ["node", "scripts/alert-dispatcher.js"]

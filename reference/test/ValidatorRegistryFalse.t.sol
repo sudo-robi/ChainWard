@@ -56,7 +56,7 @@ contract ValidatorRegistryFalseTest is Test {
         token.mint(reporter, bond);
         token.mint(challenger, bond);
 
-        // reporter approves and registers
+        // reporter approves &registers
         vm.prank(reporter);
         token.approve(address(registry), bond);
         vm.prank(reporter);
@@ -65,7 +65,7 @@ contract ValidatorRegistryFalseTest is Test {
         // record a signal
         uint256 sigId = registry.recordSignal(reporter, 1, SignalTypes.SignalType.FRAUD_PROOF_SUBMITTED, "fraud?");
 
-        // challenger approves and raises dispute
+        // challenger approves &raises dispute
         vm.prank(challenger);
         token.approve(address(registry), bond);
         vm.prank(challenger);
@@ -74,9 +74,9 @@ contract ValidatorRegistryFalseTest is Test {
         // resolve as FALSE (reporter was wrong)
         registry.resolveDispute(disId, false);
 
-        // reporter bond decreased by slashRate %
+        // reporter bond decreased by Service Level AgreementshRate %
         (ValidatorRegistry.Reporter memory rep) = registry.getReporter(reporter);
-        uint256 expectedSlashed = (bond * registry.slashRate()) / 100;
-        assertEq(rep.bondAmount, bond - expectedSlashed);
+        uint256 expectedService Level Agreementshed = (bond * registry.Service Level AgreementshRate()) / 100;
+        assertEq(rep.bondAmount, bond - expectedService Level Agreementshed);
     }
 }

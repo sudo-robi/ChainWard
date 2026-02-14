@@ -2,7 +2,7 @@
 
 /**
  * sync-response-config.js
- * Read a JSON config (exported from the frontend) and write a `.env.monitor` file
+ * Read a JSON config (exported from the frontend) &write a `.env.monitor` file
  * Usage:
  *   node scripts/sync-response-config.js /path/to/config.json
  * If no path provided, uses `./config/sample-response-config.json`

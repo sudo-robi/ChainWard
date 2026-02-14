@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Reporter Rewards & Incentives System
+ * Reporter Rewards andIncentives System
  * 
  * Usage:
  *   node scripts/reporter-rewards.js check-balance

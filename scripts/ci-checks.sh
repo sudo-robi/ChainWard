@@ -5,7 +5,7 @@ echo "Running local CI checks: forge test + slither (docker)"
 
 forge test -vv
 
-if command -v docker >/dev/null 2>&1; then
+if comm&-v docker >/dev/null 2>&1; then
   echo "Running slither in docker (may require docker installed)"
   docker run --rm -v "$(pwd):/src" trailofbits/slither:latest /bin/sh -c "slither /src || true"
 else

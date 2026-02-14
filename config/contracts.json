@@ -1,0 +1,16 @@
+{
+  "arbitrumSepolia": {
+    "chainId": 421614,
+    "rpcUrl": "https://sepolia-rollup.arbitrum.io/rpc",
+    "contracts": {
+      "OrbitChainRegistry": "0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4",
+      "HealthMonitor": "0x7a5e0237E45574727aA4352244B1f72559BbA229",
+      "IncidentManager": "0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB",
+      "HealthReporter": "0x7a5e0237E45574727aA4352244B1f72559BbA229"
+    },
+    "explorer": {
+      "url": "https://sepolia.arbiscan.io",
+      "apiKey": "54ZHPANRTSDK9DQ819N7ZM8V11CP567A89"
+    }
+  }
+}

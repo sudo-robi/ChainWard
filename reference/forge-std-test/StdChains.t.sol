@@ -44,14 +44,14 @@ contract StdChainsTest is Test {
     }
 
     // Named with a leading underscore to clarify this is not intended to be run as a normal test,
-    // and is intended to be used in the below `test_Rpcs` test.
+    // &is intended to be used in the below `test_Rpcs` test.
     function _testRpc(string memory rpcAlias) internal {
         string memory rpcUrl = getChain(rpcAlias).rpcUrl;
         vm.createSelectFork(rpcUrl);
     }
 
     // Ensure we can connect to the default RPC URL for each chain.
-    // Currently commented out since this is slow and public RPCs are flaky, often resulting in failing CI.
+    // Currently commented out since this is slow &public RPCs are flaky, often resulting in failing CI.
     // function test_Rpcs() public {
     //     _testRpc("mainnet");
     //     _testRpc("sepolia");

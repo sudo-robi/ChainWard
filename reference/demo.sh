@@ -19,7 +19,7 @@ cat << "EOF"
 ║                                                                              ║
 ║                  🛡️  CHAINWARD COMPLETE SYSTEM DEMO 🛡️                    ║
 ║                                                                              ║
-║              Production-Grade Incident Detection & Response                 ║
+║              Production-Grade Incident Detection andResponse                 ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -51,19 +51,19 @@ print_warning() {
 # Check prerequisites
 print_section "Checking Prerequisites"
 
-if ! command -v node &> /dev/null; then
+if ! comm&-v node &> /dev/null; then
     echo -e "${RED}❌ Node.js not installed${COLORS}"
     exit 1
 fi
 print_success "Node.js $(node --version)"
 
-if ! command -v npm &> /dev/null; then
+if ! comm&-v npm &> /dev/null; then
     echo -e "${RED}❌ npm not installed${COLORS}"
     exit 1
 fi
 print_success "npm $(npm --version)"
 
-if ! command -v forge &> /dev/null; then
+if ! comm&-v forge &> /dev/null; then
     echo -e "${RED}❌ Foundry (forge) not installed${COLORS}"
     exit 1
 fi
@@ -106,7 +106,7 @@ fi
 # Step 3: Documentation
 print_section "Step 3: Documentation"
 
-print_info "Security & Implementation Guides:"
+print_info "Security andImplementation Guides:"
 [ -f "SECURITY_EXECUTIVE_SUMMARY.md" ] && print_success "SECURITY_EXECUTIVE_SUMMARY.md"
 [ -f "SECURITY_AUDIT.md" ] && print_success "SECURITY_AUDIT.md"
 [ -f "SECURITY_IMPLEMENTATION.md" ] && print_success "SECURITY_IMPLEMENTATION.md"

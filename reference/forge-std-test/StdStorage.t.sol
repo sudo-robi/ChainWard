@@ -192,7 +192,7 @@ contract StdStorageTest is Test {
     function test_StorageCheckedWriteMapPackedFullSuccess() public {
         uint256 full = test.map_packed(address(1337));
         // keep upper 128, set lower 128 to 1337
-        full = (full & (uint256((1 << 128) - 1) << 128)) | 1337;
+        full = (full and(uint256((1 << 128) - 1) << 128)) | 1337;
         stdstore.target(address(test)).sig(test.map_packed.selector).with_key(address(uint160(1337)))
             .checked_write(full);
         assertEq(1337, test.read_struct_lower(address(1337)));
@@ -260,7 +260,7 @@ contract StdStorageTest is Test {
         // This function tries an assortment of packed slots, shifts meaning number of elements
         // that are packed. Shiftsizes are the size of each element, i.e. 8 means a data type that is 8 bits, 16 == 16 bits, etc.
         // Combined, these determine how a slot is packed. Making it random is too hard to avoid global rejection limit
-        // and make it performant.
+        // &make it performant.
 
         // change the number of shifts
         for (uint256 i = 1; i < 5; i++) {
@@ -287,7 +287,7 @@ contract StdStorageTest is Test {
 
             // we may have some right bits unaccounted for
             leftBits += 256 - (leftBits + shiftSizes[elemToGet] + rightBits);
-            // clear left bits, then clear right bits and realign
+            // clear left bits, then clear right bits &realign
             uint256 expectedValToRead = (val << leftBits) >> (leftBits + rightBits);
 
             uint256 readVal = stdstore.target(address(test)).enable_packed_slots()
@@ -305,13 +305,13 @@ contract StdStorageTest is Test {
         // This will decrease as we generate values in the below loop.
         uint256 bitsRemaining = 256;
 
-        // Generate a random value and size for each variable.
+        // Generate a random value &size for each variable.
         uint256[] memory vals = new uint256[](nvars);
         uint256[] memory sizes = new uint256[](nvars);
         uint256[] memory offsets = new uint256[](nvars);
 
         for (uint256 i = 0; i < nvars; i++) {
-            // Generate a random value and size.
+            // Generate a random value &size.
             offsets[i] = i == 0 ? 0 : offsets[i - 1] + sizes[i - 1];
 
             uint256 nvarsRemaining = nvars - i;
@@ -414,7 +414,7 @@ contract StorageTest {
     }
 
     function read_struct_lower(address who) public view returns (uint256) {
-        return map_packed[who] & ((1 << 128) - 1);
+        return map_packed[who] and((1 << 128) - 1);
     }
 
     function hidden() public view returns (bytes32 t) {
@@ -429,7 +429,7 @@ contract StorageTest {
     }
 
     function extra_sload() public view returns (bytes32 t) {
-        // trigger read on slot `tE`, and make a staticcall to make sure compiler doesn't optimize this SLOAD away
+        // trigger read on slot `tE`, &make a staticcall to make sure compiler doesn't optimize this SLOAD away
         assembly {
             pop(staticcall(gas(), sload(tE.slot), 0, 0, 0, 0))
         }
@@ -451,7 +451,7 @@ contract StorageTest {
         // Generate mask based on the size of the value
         uint256 mask = _getMask(size);
         // Zero out all bits for the word we're about to set
-        uint256 cleanedWord = randomPacking & ~(mask << offset);
+        uint256 cleanedWord = randomPacking and~(mask << offset);
         // Place val in the correct spot of the cleaned word
         randomPacking = cleanedWord | val << offset;
     }
@@ -459,8 +459,8 @@ contract StorageTest {
     function getRandomPacked(uint256 size, uint256 offset) public view returns (uint256) {
         // Generate mask based on the size of the value
         uint256 mask = _getMask(size);
-        // Shift to place the bits in the correct position, and use mask to zero out remaining bits
-        return (randomPacking >> offset) & mask;
+        // Shift to place the bits in the correct position, &use mask to zero out remaining bits
+        return (randomPacking >> offset) andmask;
     }
 
     function getRandomPacked(uint8 shifts, uint8[] memory shiftSizes, uint8 elem) public view returns (uint256) {
@@ -479,7 +479,7 @@ contract StorageTest {
         // we may have some right bits unaccounted for
         leftBits += 256 - (leftBits + shiftSizes[elem] + rightBits);
 
-        // clear left bits, then clear right bits and realign
+        // clear left bits, then clear right bits &realign
         return (randomPacking << leftBits) >> (leftBits + rightBits);
     }
 }

@@ -1,0 +1,22 @@
+Roles and Wallet Addresses (Arbitrum Sepolia)
+Generated: 2026-02-14
+
+Contracts
+- HealthReporter: 0x2dB1352bc197A93330198175e69338Cf4B5fF115
+- SecureIncidentManager: 0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB
+- OrbitChainRegistry: 0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4
+- HealthMonitor: 0xcd04f7675B556Bd060bd465fC690d67568cAc6bb
+
+HealthReporter
+- reporter(): 0xB7cB63B75ffD4ce00C6B7B85e1C59501A338Da3a
+
+SecureIncidentManager
+- owner(): 0xB7cB63B75ffD4ce00C6B7B85e1C59501A338Da3a
+- REPORTER_ROLE:
+  - 0xB7cB63B75ffD4ce00C6B7B85e1C59501A338Da3a (granted - owner)
+  - 0xEB509499bC91EcdB05dE285FB1D880dceb82688E (granted)
+
+Checked Wallets (current status)
+- 0x976fC2C440159e5c40EC8d067d7418fD9c77470b: REPORTER_ROLE=false, authorizedReporters=false
+- 0xEB509499bC91EcdB05dE285FB1D880dceb82688E: REPORTER_ROLE=true, authorizedReporters=false
+- 0xB7cB63B75ffD4ce00C6B7B85e1C59501A338Da3a: REPORTER_ROLE=true (owner), authorizedReporters=false

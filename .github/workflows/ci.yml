@@ -21,3 +21,6 @@ jobs:
       - name: Run Slither (dockerized)
         run: |
           docker run --rm -v "${{ github.workspace }}:/src" trailofbits/slither:latest /bin/sh -c "slither /src || true"
+      - name: Build Docker Images (Dry Run)
+        run: |
+          docker compose build --no-cache

@@ -9,7 +9,7 @@ async function main() {
   const registryAddress = process.env.REGISTRY_ADDRESS;
   const monitorAddress = process.env.MONITOR_ADDRESS;
   if (!registryAddress || !monitorAddress) {
-    console.error('Set REGISTRY_ADDRESS and MONITOR_ADDRESS in .env');
+    console.error('Set REGISTRY_ADDRESS &MONITOR_ADDRESS in .env');
     process.exit(1);
   }
 

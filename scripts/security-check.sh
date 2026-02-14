@@ -95,7 +95,7 @@ else
 fi
 
 # Check if .env exists but not committed
-if [ -f .env ] && ! git ls-files | grep -q "^.env$"; then
+if [ -f .env ] &&! git ls-files | grep -q "^.env$"; then
     pass ".env file exists but not in git (good!)"
 elif [ -f .env ]; then
     fail ".env file is committed to git"
@@ -176,7 +176,7 @@ echo ""
 echo "5️⃣  Test Suite"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Run tests and check results
+# Run tests &check results
 TEST_OUTPUT=$(forge test 2>&1)
 
 if echo "$TEST_OUTPUT" | grep -q "passed"; then
@@ -219,7 +219,7 @@ fi
 if [ -f "scripts/report-secure.js" ] && [ -f "scripts/deploy-secure.js" ]; then
     pass "Secure script variants present"
 else
-    warn "Secure script variants not found - use report-secure.js and deploy-secure.js"
+    warn "Secure script variants not found - use report-secure.js &deploy-secure.js"
 fi
 
 echo ""

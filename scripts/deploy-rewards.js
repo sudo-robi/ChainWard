@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Deploy ReporterRewards and BondManager
+ * Deploy ReporterRewards &BondManager
  * Usage:
  *   npx hardhat run scripts/deploy-rewards.js --network sepolia
  */

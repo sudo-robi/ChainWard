@@ -58,7 +58,7 @@ contract ValidatorRegistryTest is Test {
     }
 
     function testRegisterReportAndDisputeResolveValid() public {
-        // Give reporter and challenger tokens
+        // Give reporter &challenger tokens
         token.mint(reporter, 10 ether);
         token.mint(challenger, 10 ether);
 

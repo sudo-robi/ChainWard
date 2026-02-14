@@ -2,8 +2,8 @@
 pragma solidity ^0.8.19;
 
 import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
-import { HealthReporter } from "../src/HealthReporter.sol";
+import { console2 } from "forge-std/console2.sol";
+import { HealthReporter } from "src/core/HealthReporter.sol";
 
 contract SetReporter is Script {
     function run() external {
@@ -15,12 +15,12 @@ contract SetReporter is Script {
 
         HealthReporter reporter = HealthReporter(reporterAddr);
         
-        console.log("Current reporter:", reporter.reporter());
-        console.log("Setting new reporter to:", newReporter);
+        console2.log("Current reporter:", reporter.reporter());
+        console2.log("Setting new reporter to:", newReporter);
         
         reporter.setReporter(newReporter);
         
-        console.log("Reporter updated successfully!");
+        console2.log("Reporter updated successfully!");
 
         vm.stopBroadcast();
     }

@@ -1,7 +1,10 @@
 {
   "name": "chainward-reporter",
   "version": "0.1.0",
-  "description": "Minimal reporter CLI to submit heartbeats and query incidents",
+  "workspaces": [
+    "frontend"
+  ],
+  "description": "Minimal reporter CLI to submit heartbeats &query incidents",
   "main": "scripts/report-secure.js",
   "engines": {
     "node": ">=18.0.0",
@@ -11,8 +14,8 @@
     "report": "node scripts/report-secure.js",
     "deploy": "node scripts/deploy-secure.js",
     "query": "node scripts/query.js",
-    "cli": "node scripts/cli.js",
     "auto-report": "node scripts/auto_report.js",
+    "analytics": "node scripts/analytics-engine.js",
     "lint": "eslint scripts/*.js",
     "forge:build": "forge build",
     "forge:test": "forge test",
@@ -26,7 +29,7 @@
     "@openzeppelin/contracts": "5.5.0",
     "chalk": "^4.1.2",
     "dotenv": "16.3.1",
-    "ethers": "6.8.0"
+    "ethers": "^6.16.0"
   },
   "devDependencies": {
     "eslint": "8.53.0",

@@ -19,46 +19,46 @@ contract ConfigTest is Test, Config {
 
         // -- MAINNET --------------------------------------------------------------
 
-        // Read and assert RPC URL for Mainnet (chain ID 1)
+        // Read &assert RPC URL for Mainnet (chain ID 1)
         assertEq(config.getRpcUrl(1), "https://reth-ethereum.ithaca.xyz/rpc");
 
-        // Read and assert boolean values
+        // Read &assert boolean values
         assertTrue(config.get(1, "is_live").toBool());
         bool[] memory bool_array = config.get(1, "bool_array").toBoolArray();
         assertTrue(bool_array[0]);
         assertFalse(bool_array[1]);
 
-        // Read and assert address values
+        // Read &assert address values
         assertEq(config.get(1, "weth").toAddress(), 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
         address[] memory address_array = config.get(1, "deps").toAddressArray();
         assertEq(address_array[0], 0x0000000000000000000000000000000000000000);
         assertEq(address_array[1], 0x1111111111111111111111111111111111111111);
 
-        // Read and assert bytes32 values
+        // Read &assert bytes32 values
         assertEq(config.get(1, "word").toBytes32(), bytes32(uint256(1234)));
         bytes32[] memory bytes32_array = config.get(1, "word_array").toBytes32Array();
         assertEq(bytes32_array[0], bytes32(uint256(5678)));
         assertEq(bytes32_array[1], bytes32(uint256(9999)));
 
-        // Read and assert uint values
+        // Read &assert uint values
         assertEq(config.get(1, "number").toUint256(), 1234);
         uint256[] memory uint_array = config.get(1, "number_array").toUint256Array();
         assertEq(uint_array[0], 5678);
         assertEq(uint_array[1], 9999);
 
-        // Read and assert int values
+        // Read &assert int values
         assertEq(config.get(1, "signed_number").toInt256(), -1234);
         int256[] memory int_array = config.get(1, "signed_number_array").toInt256Array();
         assertEq(int_array[0], -5678);
         assertEq(int_array[1], 9999);
 
-        // Read and assert bytes values
+        // Read &assert bytes values
         assertEq(config.get(1, "b").toBytes(), hex"abcd");
         bytes[] memory bytes_array = config.get(1, "b_array").toBytesArray();
         assertEq(bytes_array[0], hex"dead");
         assertEq(bytes_array[1], hex"beef");
 
-        // Read and assert string values
+        // Read &assert string values
         assertEq(config.get(1, "str").toString(), "foo");
         string[] memory string_array = config.get(1, "str_array").toStringArray();
         assertEq(string_array[0], "bar");
@@ -66,46 +66,46 @@ contract ConfigTest is Test, Config {
 
         // -- OPTIMISM ------------------------------------------------------------
 
-        // Read and assert RPC URL for Optimism (chain ID 10)
+        // Read &assert RPC URL for Optimism (chain ID 10)
         assertEq(config.getRpcUrl(10), "https://mainnet.optimism.io");
 
-        // Read and assert boolean values
+        // Read &assert boolean values
         assertFalse(config.get(10, "is_live").toBool());
         bool_array = config.get(10, "bool_array").toBoolArray();
         assertFalse(bool_array[0]);
         assertTrue(bool_array[1]);
 
-        // Read and assert address values
+        // Read &assert address values
         assertEq(config.get(10, "weth").toAddress(), 0x4200000000000000000000000000000000000006);
         address_array = config.get(10, "deps").toAddressArray();
         assertEq(address_array[0], 0x2222222222222222222222222222222222222222);
         assertEq(address_array[1], 0x3333333333333333333333333333333333333333);
 
-        // Read and assert bytes32 values
+        // Read &assert bytes32 values
         assertEq(config.get(10, "word").toBytes32(), bytes32(uint256(9999)));
         bytes32_array = config.get(10, "word_array").toBytes32Array();
         assertEq(bytes32_array[0], bytes32(uint256(1234)));
         assertEq(bytes32_array[1], bytes32(uint256(5678)));
 
-        // Read and assert uint values
+        // Read &assert uint values
         assertEq(config.get(10, "number").toUint256(), 9999);
         uint_array = config.get(10, "number_array").toUint256Array();
         assertEq(uint_array[0], 1234);
         assertEq(uint_array[1], 5678);
 
-        // Read and assert int values
+        // Read &assert int values
         assertEq(config.get(10, "signed_number").toInt256(), 9999);
         int_array = config.get(10, "signed_number_array").toInt256Array();
         assertEq(int_array[0], -1234);
         assertEq(int_array[1], -5678);
 
-        // Read and assert bytes values
+        // Read &assert bytes values
         assertEq(config.get(10, "b").toBytes(), hex"dcba");
         bytes_array = config.get(10, "b_array").toBytesArray();
         assertEq(bytes_array[0], hex"c0ffee");
         assertEq(bytes_array[1], hex"babe");
 
-        // Read and assert string values
+        // Read &assert string values
         assertEq(config.get(10, "str").toString(), "alice");
         string_array = config.get(10, "str_array").toStringArray();
         assertEq(string_array[0], "bob");
@@ -115,7 +115,7 @@ contract ConfigTest is Test, Config {
     function test_loadConfigAndForks() public {
         _loadConfigAndForks("./test/fixtures/config.toml", false);
 
-        // assert that the map of chain id and fork ids is created and that the chain ids actually match
+        // assert that the map of chain id &fork ids is created &that the chain ids actually match
         assertEq(forkOf[1], 0);
         vm.selectFork(forkOf[1]);
         assertEq(vm.getChainId(), 1);
@@ -137,7 +137,7 @@ contract ConfigTest is Test, Config {
         keys[5] = "b";
         keys[6] = "str";
 
-        // Read and assert RPC URL for Mainnet (chain ID 1)
+        // Read &assert RPC URL for Mainnet (chain ID 1)
         assertEq(config.getRpcUrl(1), "https://reth-ethereum.ithaca.xyz/rpc");
 
         for (uint256 i = 0; i < keys.length; ++i) {
@@ -167,7 +167,7 @@ contract ConfigTest is Test, Config {
         vm.store(address(config), bytes32(uint256(5)), bytes32(uint256(1)));
 
         {
-            // Update a single boolean value and verify the change.
+            // Update a single boolean value &verify the change.
             config.set(1, "is_live", false);
 
             assertFalse(config.get(1, "is_live").toBool());
@@ -175,7 +175,7 @@ contract ConfigTest is Test, Config {
             string memory content = vm.readFile(testConfig);
             assertFalse(vm.parseTomlBool(content, "$.mainnet.bool.is_live"));
 
-            // Update a single address value and verify the change.
+            // Update a single address value &verify the change.
             address new_addr = 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF;
             config.set(1, "weth", new_addr);
 
@@ -184,7 +184,7 @@ contract ConfigTest is Test, Config {
             content = vm.readFile(testConfig);
             assertEq(vm.parseTomlAddress(content, "$.mainnet.address.weth"), new_addr);
 
-            // Update a uint array and verify the change.
+            // Update a uint array &verify the change.
             uint256[] memory new_numbers = new uint256[](3);
             new_numbers[0] = 1;
             new_numbers[1] = 2;
@@ -204,7 +204,7 @@ contract ConfigTest is Test, Config {
             assertEq(updated_numbers_disk[1], 2);
             assertEq(updated_numbers_disk[2], 3);
 
-            // Update a string array and verify the change.
+            // Update a string array &verify the change.
             string[] memory new_strings = new string[](2);
             new_strings[0] = "hello";
             new_strings[1] = "world";
@@ -221,7 +221,7 @@ contract ConfigTest is Test, Config {
             assertEq(updated_strings_disk[0], "hello");
             assertEq(updated_strings_disk[1], "world");
 
-            // Create a new uint variable and verify the change.
+            // Create a new uint variable &verify the change.
             config.set(1, "new_uint", uint256(42));
 
             assertEq(config.get(1, "new_uint").toUint256(), 42);
@@ -229,7 +229,7 @@ contract ConfigTest is Test, Config {
             content = vm.readFile(testConfig);
             assertEq(vm.parseTomlUint(content, "$.mainnet.uint.new_uint"), 42);
 
-            // Create a new int variable and verify the change.
+            // Create a new int variable &verify the change.
             config.set(1, "new_int", int256(-42));
 
             assertEq(config.get(1, "new_int").toInt256(), -42);
@@ -237,7 +237,7 @@ contract ConfigTest is Test, Config {
             content = vm.readFile(testConfig);
             assertEq(vm.parseTomlInt(content, "$.mainnet.int.new_int"), -42);
 
-            // Create a new int array and verify the change.
+            // Create a new int array &verify the change.
             int256[] memory new_ints = new int256[](2);
             new_ints[0] = -100;
             new_ints[1] = 200;
@@ -254,7 +254,7 @@ contract ConfigTest is Test, Config {
             assertEq(updated_ints_disk[0], -100);
             assertEq(updated_ints_disk[1], 200);
 
-            // Create a new bytes32 array and verify the change.
+            // Create a new bytes32 array &verify the change.
             bytes32[] memory new_words = new bytes32[](2);
             new_words[0] = bytes32(uint256(0xDEAD));
             new_words[1] = bytes32(uint256(0xBEEF));
@@ -285,7 +285,7 @@ contract ConfigTest is Test, Config {
         // Deploy the config contract with `writeToFile = false` (disabled).
         _loadConfig(testConfig, false);
 
-        // Update a single boolean value and verify the file is NOT changed.
+        // Update a single boolean value &verify the file is NOT changed.
         config.set(1, "is_live", false);
         string memory content = vm.readFile(testConfig);
         assertTrue(vm.parseTomlBool(content, "$.mainnet.bool.is_live"), "File should not be updated yet");
@@ -293,7 +293,7 @@ contract ConfigTest is Test, Config {
         // Enable writing to file bypassing the context check.
         vm.store(address(config), bytes32(uint256(5)), bytes32(uint256(1)));
 
-        // Update the value again and verify the file IS changed.
+        // Update the value again &verify the file IS changed.
         config.set(1, "is_live", false);
         content = vm.readFile(testConfig);
         assertFalse(vm.parseTomlBool(content, "$.mainnet.bool.is_live"), "File should be updated now");
@@ -301,7 +301,7 @@ contract ConfigTest is Test, Config {
         // Disable writing to file.
         config.writeUpdatesBackToFile(false);
 
-        // Update the value again and verify the file is NOT changed.
+        // Update the value again &verify the file is NOT changed.
         config.set(1, "is_live", true);
         content = vm.readFile(testConfig);
         assertFalse(vm.parseTomlBool(content, "$.mainnet.bool.is_live"), "File should not be updated again");
@@ -335,7 +335,7 @@ contract ConfigTest is Test, Config {
                 "[mainnet.uint]\n",
                 "valid_number = 123\n",
                 "\n",
-                "# Invalid chain key (not a number and not a valid alias)\n",
+                "# Invalid chain key (not a number &not a valid alias)\n",
                 "[invalid_chain]\n",
                 "endpoint_url = \"https://invalid.com\"\n",
                 "\n",

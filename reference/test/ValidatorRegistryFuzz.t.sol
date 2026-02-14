@@ -48,7 +48,7 @@ contract ValidatorRegistryFuzz is Test {
         registry.addSupportedToken(address(token), 1 ether);
     }
 
-    // Fuzz: register with various bonds and then raise+resolve dispute as true
+    // Fuzz: register with various bonds &then raise+resolve dispute as true
     // Invariant: reporter bond increases by exactly accuracyRewardRate% when validated true
     function testFuzzAccuracyReward(uint256 bond) public {
         bond = bound(bond, 1 ether, 50 ether);

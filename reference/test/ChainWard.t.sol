@@ -28,7 +28,7 @@ contract ChainWardTest is Test {
         // Create HealthReporter first
         reporter = new HealthReporter(address(registry), address(incidents), healthReporter);
         
-        // Link IncidentManager to registry and reporter contract
+        // Link IncidentManager to registry &reporter contract
         incidents.setRegistry(address(registry));
         incidents.setReporterContract(address(reporter));
 
@@ -128,7 +128,7 @@ contract ChainWardTest is Test {
 
         // Resolve the incident (only IncidentManager registry can do this)
         vm.prank(address(registry));
-        incidents.resolveIncident(0, "Sequencer restarted and healthy");
+        incidents.resolveIncident(0, "Sequencer restarted &healthy");
         IncidentManager.Incident memory inc = incidents.getIncident(0);
         assertTrue(inc.resolved);
     }

@@ -1,4 +1,4 @@
-# Analytics and local data
+# Analytics &local data
 data/
 deploy.log
 
@@ -22,7 +22,7 @@ agent/failure_timeline.json
 .env.optimism
 .env.production
 
-# Private Keys & Secrets
+# Private Keys andSecrets
 *.pem
 *.key
 *.pkcs12
@@ -36,7 +36,7 @@ secrets/
 deployments/
 broadcast/
 
-# Build & Cache
+# Build andCache
 out/
 cache/
 forge-cache/

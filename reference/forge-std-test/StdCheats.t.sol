@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity >=0.8.13 <0.9.0;
 
-import {StdCheats} from "../src/StdCheats.sol";
-import {Test} from "../src/Test.sol";
-import {stdJson} from "../src/StdJson.sol";
+import {Test} from "forge-std/Test.sol";
+import {stdJson} from "forge-std/StdJson.sol";
 import {stdToml} from "../src/StdToml.sol";
-import {IERC20} from "../src/interfaces/IERC20.sol";
 
 contract StdCheatsTest is Test {
     Bar test;
@@ -334,7 +332,7 @@ contract StdCheatsTest is Test {
     }
 
     function testFuzz_AssumeAddressIsNot(address addr) external {
-        // skip over Payable and NonPayable enums
+        // skip over Payable &NonPayable enums
         for (uint8 i = 2; i < uint8(type(AddressType).max); i++) {
             assumeAddressIsNot(addr, AddressType(i));
         }
@@ -552,7 +550,7 @@ contract Bar {
         balanceOf[address(this)] = totalSupply;
     }
 
-    /// `HOAX` and `CHANGEPRANK` STDCHEATS
+    /// `HOAX` &`CHANGEPRANK` STDCHEATS
     function bar(address expectedSender) public payable {
         require(msg.sender == expectedSender, "!prank");
     }

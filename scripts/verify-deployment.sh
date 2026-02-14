@@ -99,7 +99,7 @@ if [ "$all_ok" = true ]; then
     echo "Next steps:"
     echo "1. Register chains in ChainTypeRegistry"
     echo "2. Add supported tokens to ValidatorRegistry"
-    echo "3. Deploy responders and register with ResponderRegistry"
+    echo "3. Deploy responders &register with ResponderRegistry"
     echo "4. Initialize HealthMonitor with chains"
     echo ""
     exit 0

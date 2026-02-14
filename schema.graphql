@@ -1,0 +1,174 @@
+type Incident @entity(immutable: true) {
+  id: ID!
+  incidentId: BigInt!
+  reporter: Bytes!
+  chainId: BigInt!
+  chainName: String!
+  incidentType: String!
+  severity: Int!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  status: String! # REPORTED, ESCALATED, RESOLVED
+  resolution: String
+  evidence: [IncidentEvidence!]! @derivedFrom(field: "incident")
+  events: [IncidentEvent!]! @derivedFrom(field: "incident")
+  chains: [IncidentChain!]! @derivedFrom(field: "incident")
+  detectionLatency: BigInt!
+  resolvedAt: BigInt
+}
+
+type IncidentEvent @entity(immutable: true) {
+  id: ID!
+  incident: Incident!
+  eventType: String!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  data: String!
+}
+
+type IncidentChain @entity(immutable: true) {
+  id: ID!
+  incident: Incident!
+  chainId: BigInt!
+  chainName: String!
+  affectedBlocks: BigInt!
+  impactScore: Int!
+  attachedAt: BigInt!
+}
+
+type IncidentEvidence @entity(immutable: true) {
+  id: ID!
+  incident: Incident!
+  submittedBy: Bytes!
+  timestamp: BigInt!
+  ipfsHash: String!
+  contentType: String!
+  description: String!
+}
+
+type Reporter @entity {
+  id: ID!
+  address: Bytes!
+  totalReports: BigInt!
+  accurateReports: BigInt!
+  falseReports: BigInt!
+  accuracy: BigDecimal!
+  totalRewardsEarned: BigDecimal!
+  totalService Level Agreementshed: BigDecimal!
+  lastReportTime: BigInt!
+  joinedAt: BigInt!
+  status: String! # ACTIVE, SUSPENDED, BANNED
+  incidents: [Incident!]! @derivedFrom(field: "reporter")
+  rewardHistory: [RewardClaim!]! @derivedFrom(field: "reporter")
+}
+
+type HealthReport @entity(immutable: true) {
+  id: ID!
+  reporter: Bytes!
+  chainId: BigInt!
+  chainName: String!
+  blockNumber: BigInt!
+  blockTime: BigInt!
+  timestamp: BigInt!
+  blockLag: BigInt!
+  sequencerLatency: BigInt!
+  stateRoot: Bytes!
+  transactionHash: Bytes!
+  isAnomaly: Boolean!
+}
+
+type AnomalyType @entity(immutable: true) {
+  id: ID!
+  report: HealthReport!
+  anomalyType: String! # BLOCK_LAG, SEQUENCER_STALL, STATE_ROOT_CHANGED
+  severity: Int!
+  value: BigInt!
+  threshold: BigInt!
+  detectedAt: BigInt!
+}
+
+type RewardClaim @entity(immutable: true) {
+  id: ID!
+  reporter: Reporter!
+  amount: BigDecimal!
+  claimType: String! # ACCURATE_REPORT, SEVERITY_BONUS, MULTI_CHAIN_BONUS, FAST_RESPONSE
+  relatedIncident: Incident
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type RewardMetrics @entity {
+  id: ID!
+  totalDistributed: BigDecimal!
+  totalClaimed: BigDecimal!
+  totalService Level Agreementshed: BigDecimal!
+  activeReporters: BigInt!
+  claimsProcessed: BigInt!
+  lastUpdated: BigInt!
+}
+
+type ResponderAction @entity(immutable: true) {
+  id: ID!
+  responder: Bytes!
+  incidentId: BigInt!
+  actionType: String!
+  actionStatus: String! # TRIGGERED, EXECUTING, EXECUTED, FAILED
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  resultMessage: String
+}
+
+type ResponderMetrics @entity {
+  id: ID!
+  responder: Bytes!
+  totalActionsTriggered: BigInt!
+  successfulExecutions: BigInt!
+  failedExecutions: BigInt!
+  successRate: BigDecimal!
+  lastActionTime: BigInt!
+  totalIncidentsResponded: BigInt!
+}
+
+type DailyStats @entity {
+  id: ID! # YYYY-MM-DD
+  date: BigInt!
+  incidentsReported: BigInt!
+  reportsSubmitted: BigInt!
+  accurateReports: BigInt!
+  falseReports: BigInt!
+  rewardsDistributed: BigDecimal!
+  totalService Level Agreementshed: BigDecimal!
+  activeReporters: BigInt!
+  uniqueChains: BigInt!
+  avgIncidentSeverity: BigDecimal!
+}
+
+type ChainMetrics @entity {
+  id: ID!
+  chainId: BigInt!
+  chainName: String!
+  totalIncidents: BigInt!
+  highSeverityIncidents: BigInt!
+  avgResolutionTime: BigInt!
+  avgDetectionLatency: BigInt!
+  reportersActive: BigInt!
+  lastIncidentTime: BigInt!
+  totalRewardsDistributed: BigDecimal!
+}
+
+type GlobalMetrics @entity {
+  id: ID! # "global"
+  totalIncidents: BigInt!
+  totalReports: BigInt!
+  totalReporters: BigInt!
+  totalValidators: BigInt!
+  totalRewardsDistributed: BigDecimal!
+  totalService Level Agreementshed: BigDecimal!
+  totalChainsCovered: BigInt!
+  systemUptime: BigDecimal!
+  lastUpdated: BigInt!
+}

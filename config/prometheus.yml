@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "chainward-frontend"
+    static_configs:
+      - targets: ["frontend:3000"]
+
+  - job_name: "alert-dispatcher"
+    static_configs:
+      - targets: ["alert-dispatcher:3000"] # Assuming internal health/metrics port
+
+  - job_name: "analytics-engine"
+    static_configs:
+      - targets: ["analytics-engine:3001"]

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Minimal agent API server to expose failure_timeline.json and trigger test incidents
+// Minimal agent API server to expose failure_timeline.json &trigger test incidents
 const http = require('http');
 const fs = require('fs');
 const path = require('path');

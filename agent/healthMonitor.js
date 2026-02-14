@@ -40,7 +40,7 @@ class HealthMonitor {
   }
 
   /**
-   * Initialize provider and contract connection
+   * Initialize provider &contract connection
    */
   async initialize(chainName = 'arbitrum-sepolia') {
     const chainConfig = CONFIG.chains[chainName];
@@ -343,6 +343,7 @@ if (require.main === module) {
       process.exit(1);
     }
 
+
     const monitor = new HealthMonitor(contractAddress, [], privateKey);
     monitor.initialize().then(() => monitor.start());
 
@@ -351,3 +352,4 @@ if (require.main === module) {
     console.log(`Simulating test incident of type: ${type}`);
   }
 }
+

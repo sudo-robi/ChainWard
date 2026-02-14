@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incident-manager
+  namespace: chainward
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: incident-manager
+  template:
+    metadata:
+      labels:
+        app: incident-manager
+    spec:
+      containers:
+      - name: incident-manager
+        image: chainward/scripts:latest
+        command: ["node", "scripts/alert-dispatcher.js"]
+        envFrom:
+        - configMapRef:
+            name: chainward-config
+        - secretRef:
+            name: chainward-secrets
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: incident-manager-svc
+  namespace: chainward
+spec:
+  selector:
+    app: incident-manager
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000

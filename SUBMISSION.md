@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**ChainWard** is an on-chain incident tracking and detection system for Arbitrum Orbit chains. It solves a real, urgent problem: Orbit chain operators need **permanent, auditable proof** that their chain failed and when.
+**ChainWard** is an on-chain incident tracking &detection system for Arbitrum Orbit chains. It solves a real, urgent problem: Orbit chain operators need **permanent, auditable proof** that their chain failed &when.
 
 ## Problem Statement
 
@@ -19,14 +19,14 @@ Orbit chains are fragile:
 Three-layer architecture:
 
 1. **OrbitChainRegistry** (governance)
-   - Declares monitored chains and their thresholds
+   - Declares monitored chains &their thresholds
    - Expected block time, max acceptable lag
    - Owner-controlled registration
 
 2. **IncidentManager** (credibility)
    - Permanent, immutable incident records
    - Forensic detail: failure type, severity, last healthy block, timestamp
-   - Structured events for indexing and audit trails
+   - Structured events for indexing &audit trails
 
 3. **HealthReporter** (detection)
    - Accepts health signals from off-chain agents
@@ -41,7 +41,7 @@ Three-layer architecture:
 - Message queue failure
 - Operator error
 
-✅ **Forensic detail** — each incident records exact timing and context
+✅ **Forensic detail** — each incident records exact timing &context
 ✅ **On-chain immutability** — incidents cannot be rewritten or hidden
 ✅ **Orbit-specific** — sequencer heartbeats, block times, L2 awareness built-in
 ✅ **Authority separation** — owner/reporter/querier roles clearly defined
@@ -50,9 +50,9 @@ Three-layer architecture:
 ## Deliverables
 
 ### Smart Contracts
-- `src/OrbitChainRegistry.sol` — Chain governance and threshold management
+- `src/OrbitChainRegistry.sol` — Chain governance &threshold management
 - `src/IncidentManager.sol` — Permanent incident recording
-- `src/HealthReporter.sol` — Detection logic and threshold enforcement
+- `src/HealthReporter.sol` — Detection logic &threshold enforcement
 
 ### Tests
 - `test/ChainWard.t.sol` — 7 comprehensive Foundry tests
@@ -60,14 +60,12 @@ Three-layer architecture:
   - Cover: registration, health signals, block lag detection, sequencer stalls, incident resolution, history tracking, authorization
 
 ### Off-Chain Tooling
-- `script/Deploy.s.sol` — Foundry deployment script
-- `scripts/deploy.js` — Ethers-based deployment helper
-- `scripts/cli.js` — CLI for operator interactions (register, submit signals, query incidents)
+- `scripts/deploy-ethers.js` — Ethers-based deployment helper
 - `scripts/auto_report.js` — Periodic health reporter
-- `scripts/query.js` — Query incident history and chain state
+- `scripts/query.js` — Query incident history &chain state
 
 ### Documentation
-- `README.md` — Complete architecture and usage guide
+- `README.md` — Complete architecture &usage guide
 - `DEMO_AUTOMATED.sh` — Automated test runner demonstrating incident lifecycle
 - `FINAL_CHECKLIST.md` — Submission verification checklist
 
@@ -90,24 +88,31 @@ This runs all Foundry tests showing:
 
 ### Deploy to Arbitrum
 ```bash
-forge script script/Deploy.s.sol:Deploy \
-  --broadcast \
-  --rpc-url <ARBITRUM_TESTNET_RPC> \
-  --private-key <YOUR_KEY>
+export RPC_URL=https://sepolia-rollup.arbitrum.io/rpc
+export PRIVATE_KEY=<YOUR_KEY>
+node scripts/deploy-ethers.js
 ```
+
+## Deployed Addresses (Arbitrum Sepolia)
+
+- **OrbitChainRegistry:** `0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4`
+- **SecureIncidentManager:** `0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB`
+- **HealthMonitor:** `0xcd04f7675B556Bd060bd465fC690d67568cAc6bb`
+- **HealthReporter:** `0x2dB1352bc197A93330198175e69338Cf4B5fF115`
+- **RPC:** `https://sepolia-rollup.arbitrum.io/rpc`
 
 ## Hackathon Requirements Checklist
 
 ### Product Requirements
 - ✅ **Real user identified** — Orbit chain operators who lose money if chains fail silently
-- ✅ **On-chain logic** — All incident detection and recording happens on-chain
+- ✅ **On-chain logic** — All incident detection &recording happens on-chain
 - ✅ **Arbitrum-specific** — Uses sequencer heartbeats, block times, L2 messaging concepts
-- ✅ **No hand-waving** — Judges can see live incident detection and on-chain recording
+- ✅ **No hand-waving** — Judges can see live incident detection &on-chain recording
 - ✅ **Deployable today** — Works on any EVM chain (Arbitrum One, testnets, local Anvil)
 
 ### Code Quality
 - ✅ **Clean architecture** — Clear separation of concerns (registry/incidents/reporter)
-- ✅ **Comprehensive tests** — 7 tests covering normal and failure scenarios
+- ✅ **Comprehensive tests** — 7 tests covering normal &failure scenarios
 - ✅ **No future features** — Shipped, focused MVP with one sharp capability
 - ✅ **Production-ready** — Designed for immediate operator use
 
@@ -155,27 +160,24 @@ ChainWard/
 │   └── HealthReporter.sol         # Detection logic
 ├── test/
 │   └── ChainWard.t.sol            # 7 comprehensive tests (7/7 passing)
-├── script/
-│   └── Deploy.s.sol               # Foundry deployment
 ├── scripts/
-│   ├── deploy.js                  # Ethers deployment
-│   ├── cli.js                     # Operator CLI
+│   ├── deploy-ethers.js           # Ethers deployment
 │   ├── auto_report.js             # Health reporter
 │   └── query.js                   # Query incidents
 ├── DEMO_AUTOMATED.sh              # Test runner
-├── README.md                      # Architecture & usage
+├── README.md                      # Architecture andusage
 ├── forge.toml                     # Foundry config
 └── package.json                   # Node dependencies
 ```
 
 ## Judges: What to Look For
 
-1. **On-chain storage** — Open the contracts and see `Incident` structs being recorded
+1. **On-chain storage** — Open the contracts &see `Incident` structs being recorded
 2. **Failure detection** — `testBlockLagIncident()` shows detection logic working
 3. **Forensic detail** — Each incident records lastHealthyBlock, timestamp, failureType
 4. **Authority** — HealthReporter can only be called by authorized reporter address
 5. **Immutability** — Once an incident is recorded, it cannot be altered
-6. **Orbit-aware** — Sequencer heartbeat status and block times are first-class concepts
+6. **Orbit-aware** — Sequencer heartbeat status &block times are first-class concepts
 
 ## Run This Now
 

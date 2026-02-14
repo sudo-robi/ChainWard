@@ -120,7 +120,7 @@ const configureRegistry = async (registry, monitor, arbitrator = null, wallet = 
   // Don't set hardcoded test addresses
   if (arbitrator && arbitrator !== ethers.ZeroAddress) {
     console.log(`✓ Arbitrator: ${arbitrator}`);
-    // Only if really needed and via multisig:
+    // Only if really needed && via multisig:
     // const tx = await registry.setArbitrator(arbitrator);
     // await tx.wait();
   }

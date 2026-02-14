@@ -1,0 +1,114 @@
+specVersion: 0.0.5
+description: ChainWard - Incident Detection andResponse Indexing
+repository: https://github.com/your-org/chainward
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: IncidentManager
+    network: arbitrum-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: IncidentManager
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Incident
+        - IncidentEvent
+        - IncidentChain
+        - Reporter
+      abis:
+        - name: IncidentManager
+          file: ./abis/IncidentManager.json
+      eventHandlers:
+        - event: IncidentReported(indexed uint256,indexed address,string,uint8,uint256,uint256)
+          handler: handleIncidentReported
+        - event: IncidentResolved(indexed uint256,uint8)
+          handler: handleIncidentResolved
+        - event: IncidentEscalated(indexed uint256,uint8)
+          handler: handleIncidentEscalated
+        - event: ChainAttached(indexed uint256,uint256)
+          handler: handleChainAttached
+        - event: EvidenceSubmitted(indexed uint256,indexed address,string)
+          handler: handleEvidenceSubmitted
+      file: ./src/mappings/incident-manager.ts
+
+  - kind: ethereum
+    name: HealthReporter
+    network: arbitrum-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: HealthReporter
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - HealthReport
+        - ReporterStats
+      abis:
+        - name: HealthReporter
+          file: ./abis/HealthReporter.json
+      eventHandlers:
+        - event: HeartbeatReported(indexed address,indexed uint256,uint256,bytes32)
+          handler: handleHeartbeatReported
+        - event: AnomalyDetected(indexed address,indexed uint256,uint8,uint256)
+          handler: handleAnomalyDetected
+        - event: BlockLagDetected(indexed address,indexed uint256,uint256,uint256)
+          handler: handleBlockLagDetected
+      file: ./src/mappings/health-reporter.ts
+
+  - kind: ethereum
+    name: RewardsDistribution
+    network: arbitrum-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: RewardsDistribution
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - RewardClaim
+        - RewardMetrics
+      abis:
+        - name: RewardsDistribution
+          file: ./abis/RewardsDistribution.json
+      eventHandlers:
+        - event: RewardAccrued(indexed address,uint256,string)
+          handler: handleRewardAccrued
+        - event: RewardClaimed(indexed address,uint256)
+          handler: handleRewardClaimed
+        - event: Service Level AgreementshedFundsAdded(uint256,string)
+          handler: handleService Level AgreementshedFundsAdded
+      file: ./src/mappings/rewards-distribution.ts
+
+templates:
+  - kind: ethereum
+    name: ResponderRegistry
+    network: arbitrum-sepolia
+    source:
+      abi: ResponderRegistry
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - ResponderAction
+        - ResponderMetrics
+      abis:
+        - name: ResponderRegistry
+          file: ./abis/ResponderRegistry.json
+      eventHandlers:
+        - event: ResponderRegistered(indexed address,string)
+          handler: handleResponderRegistered
+        - event: ActionTriggered(indexed address,indexed uint256,string)
+          handler: handleActionTriggered
+        - event: ActionExecuted(indexed address,indexed uint256,bool,string)
+          handler: handleActionExecuted
+      file: ./src/mappings/responder-registry.ts

@@ -18,7 +18,7 @@ if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 const outFile = path.join(outDir, 'analytics.json');
 
-// Optionally listen for contract events and log them
+// Optionally listen for contract events &log them
 async function collectAndListen() {
   const rpc = process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
   const provider = new ethers.JsonRpcProvider(rpc);
@@ -39,7 +39,7 @@ async function collectAndListen() {
   fs.writeFileSync(outFile, JSON.stringify(arr.slice(-1000), null, 2));
   console.log('Collected metrics:', metrics);
 
-  // Listen for contract events if addresses and ABIs are provided
+  // Listen for contract events if addresses &ABIs are provided
   const monitorAddress = process.env.MONITOR_ADDRESS;
   const monitorAbi = process.env.MONITOR_ABI ? JSON.parse(process.env.MONITOR_ABI) : null;
   if (monitorAddress && monitorAbi) {

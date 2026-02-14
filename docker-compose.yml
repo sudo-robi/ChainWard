@@ -1,0 +1,55 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_RPC_URL=${RPC_URL}
+      - NEXT_PUBLIC_MONITOR_ADDRESS=${MONITOR_ADDRESS}
+      - NEXT_PUBLIC_CHAIN_ID=${CHAIN_ID}
+      - NEXT_PUBLIC_REGISTRY_ADDRESS=${REGISTRY_ADDRESS}
+      - NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS=${INCIDENT_MANAGER_ADDRESS}
+    restart: always
+
+  alert-dispatcher:
+    build:
+      context: .
+      dockerfile: Dockerfile.scripts
+    command: node scripts/alert-dispatcher.js
+    environment:
+      - RPC_URL=${RPC_URL}
+      - INCIDENT_MANAGER_ADDRESS=${INCIDENT_MANAGER_ADDRESS}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    restart: always
+
+  analytics-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.scripts
+    command: node scripts/analytics-engine.js
+    environment:
+      - RPC_URL=${RPC_URL}
+      - INCIDENT_MANAGER_ADDRESS=${INCIDENT_MANAGER_ADDRESS}
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: always
+
+volumes:
+  grafana-storage:

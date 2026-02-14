@@ -92,7 +92,7 @@ contract ResponderRegistryTest is Test {
     function testRateLimitingSameBlock() public {
         // First call in this block will call responders
         uint256 a = registry.notifyResponders(100, SignalTypes.SignalType.GAP_IN_BATCHES, SignalTypes.Severity.CRITICAL, "a");
-        // Second call in same block should be rate-limited and not call same responders
+        // Second call in same block should be rate-limited &not call same responders
         uint256 b = registry.notifyResponders(100, SignalTypes.SignalType.GAP_IN_BATCHES, SignalTypes.Severity.CRITICAL, "b");
 
         // At least one of the calls should have triggered success responder; second should not increment

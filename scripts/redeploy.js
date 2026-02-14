@@ -15,26 +15,17 @@ async function main() {
     const outDir = path.join(__dirname, '../out');
 
     // Load Artifacts
-    const registryArtifact = JSON.parse(fs.readFileSync(path.join(outDir, 'OrbitRegistry.sol', 'OrbitRegistry.json')));
-    const monitorArtifact = JSON.parse(fs.readFileSync(path.join(outDir, 'HealthMonitor.sol', 'HealthMonitor.json')));
+    const registryArtifact = JSON.parse(fs.readFileSync(path.join(outDir, 'OrbitChainRegistry.sol', 'OrbitChainRegistry.json')));
+    const reporterArtifact = JSON.parse(fs.readFileSync(path.join(outDir, 'HealthReporter.sol', 'HealthReporter.json')));
     const incidentArtifact = JSON.parse(fs.readFileSync(path.join(outDir, 'IncidentManager.sol', 'IncidentManager.json')));
 
-    // Deploy OrbitRegistry
-    console.log('Deploying OrbitRegistry...');
+    // Deploy OrbitChainRegistry
+    console.log('Deploying OrbitChainRegistry...');
     const RegistryFactory = new ethers.ContractFactory(registryArtifact.abi, registryArtifact.bytecode, wallet);
     const registry = await RegistryFactory.deploy();
     await registry.waitForDeployment();
-    const registryParams = await registry.getDeployedCode();
     const registryAddress = await registry.getAddress();
-    console.log('✅ OrbitRegistry:', registryAddress);
-
-    // Deploy HealthMonitor
-    console.log('Deploying HealthMonitor...');
-    const MonitorFactory = new ethers.ContractFactory(monitorArtifact.abi, monitorArtifact.bytecode, wallet);
-    const monitor = await MonitorFactory.deploy(registryAddress);
-    await monitor.waitForDeployment();
-    const monitorAddress = await monitor.getAddress();
-    console.log('✅ HealthMonitor:', monitorAddress);
+    console.log('✅ OrbitChainRegistry:', registryAddress);
 
     // Deploy IncidentManager
     console.log('Deploying IncidentManager...');
@@ -44,6 +35,14 @@ async function main() {
     const incidentAddress = await incidentManager.getAddress();
     console.log('✅ IncidentManager:', incidentAddress);
 
+    // Deploy HealthReporter
+    console.log('Deploying HealthReporter...');
+    const ReporterFactory = new ethers.ContractFactory(reporterArtifact.abi, reporterArtifact.bytecode, wallet);
+    const reporter = await ReporterFactory.deploy(registryAddress, incidentAddress, wallet.address);
+    await reporter.waitForDeployment();
+    const reporterAddress = await reporter.getAddress();
+    console.log('✅ HealthReporter:', reporterAddress);
+
     // Wiring
     console.log('Wiring contracts...');
     // IncidentManager: setRegistry
@@ -51,19 +50,26 @@ async function main() {
     await tx.wait();
     console.log('✓ IncidentManager.setRegistry(registry)');
 
-    // IncidentManager: setReporterContract (Monitor)
-    tx = await incidentManager.setReporterContract(monitorAddress);
+    // IncidentManager: setReporterAuthorization (HealthReporter)
+    tx = await incidentManager.setReporterAuthorization(reporterAddress, true);
     await tx.wait();
-    console.log('✓ IncidentManager.setReporterContract(monitor)');
+    console.log('✓ IncidentManager.setReporterAuthorization(reporter)');
 
-    // Authorize Deployer as Reporter (for simulation)
-    tx = await incidentManager.setReporterAuthorization(wallet.address, true);
+    // Register active chain in Registry
+    console.log('Registering chain 421614 in Registry...');
+    tx = await registry.registerChain(
+        421614,
+        wallet.address,
+        13, // expectedBlockTime
+        120, // maxBlockLag
+        "Arbitrum Sepolia"
+    );
     await tx.wait();
-    console.log('✓ IncidentManager.setReporterAuthorization(deployer)');
+    console.log('✓ Registered chain 421614');
 
     console.log('\n--- NEW ADDRESSES ---');
     console.log(`REGISTRY_ADDRESS=${registryAddress}`);
-    console.log(`MONITOR_ADDRESS=${monitorAddress}`);
+    console.log(`MONITOR_ADDRESS=${reporterAddress}`);
     console.log(`INCIDENT_MANAGER_ADDRESS=${incidentAddress}`);
 }
 

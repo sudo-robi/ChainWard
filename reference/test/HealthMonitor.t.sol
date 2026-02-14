@@ -35,7 +35,7 @@ contract HealthMonitorTest is Test {
         assertGt(t, 0);
         assertFalse(monitor.inIncident(chainId));
 
-        // advance time less than threshold and ensure no incident
+        // advance time less than threshold &ensure no incident
         vm.warp(block.timestamp + 3);
         monitor.triggerIncidentIfExpired(chainId);
         assertFalse(monitor.inIncident(chainId));
@@ -49,7 +49,7 @@ contract HealthMonitorTest is Test {
         // warp beyond threshold
         vm.warp(block.timestamp + 10);
         monitor.triggerIncidentIfExpired(chainId);
-        // after incident, bond should be reduced (slashed) by SLASH_AMOUNT (1 wei)
+        // after incident, bond should be reduced (Service Level Agreementshed) by Service Level AgreementSH_AMOUNT (1 wei)
         uint256 b = registry.getBond(chainId);
         assertEq(b, 1 ether - 1);
         assertTrue(monitor.inIncident(chainId));

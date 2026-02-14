@@ -59,7 +59,7 @@ async function main() {
     const [chainId, blockNumber, blockTimestamp] = args;
 
     if (!process.env.RPC_URL || !process.env.PRIVATE_KEY) {
-        console.error('Error: RPC_URL and PRIVATE_KEY environment variables required');
+        console.error('Error: RPC_URL &PRIVATE_KEY environment variables required');
         process.exit(1);
     }
 
