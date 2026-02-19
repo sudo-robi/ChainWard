@@ -7,7 +7,23 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadCont
 import { parseEther, formatEther } from 'viem';
 
 const registryAddress = appConfig.registryAddress as `0x${string}`;
-const chainId = BigInt(appConfig.chainId);
+const rawChainId = appConfig.chainId;
+const chainId = (() => {
+  if (typeof rawChainId === 'bigint') return rawChainId;
+  if (typeof rawChainId === 'number' && Number.isInteger(rawChainId) && rawChainId > 0) {
+    return BigInt(rawChainId);
+  }
+  if (typeof rawChainId === 'string' && rawChainId.trim()) {
+    try {
+      const parsed = BigInt(rawChainId.trim());
+      if (parsed > 0n) return parsed;
+    } catch {
+      // fall through to default
+    }
+  }
+  console.error('Invalid chainId:', rawChainId, '- using default 421614');
+  return 421614n;
+})();
 
 const RegistryAbi = [
   {

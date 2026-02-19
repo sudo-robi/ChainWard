@@ -6,7 +6,6 @@ import { config } from '../config';
 
 const registryAddress = config.registryAddress;
 const monitorAddress = config.monitorAddress;
-// const reporterAddress = config.healthReporterAddress; // removed as it is not in config
 const chainId = config.chainId;
 
 const RegistryAbi = [
@@ -35,7 +34,7 @@ const ChainHealth = () => {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    if (!registryAddress || !reporterAddress || !config.rpcUrl || !chainId) {
+    if (!registryAddress || !monitorAddress || !config.rpcUrl || !chainId) {
       setStatus('Not Configured');
       setBlockTime('N/A');
       setSequencer('Unknown');

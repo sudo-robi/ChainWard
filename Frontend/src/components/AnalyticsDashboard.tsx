@@ -5,6 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { config } from '../config';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const isZeroAddress = (address: string) => address.toLowerCase() === ZERO_ADDRESS;
+
 const IncidentManagerAbi = [
     "function nextIncidentId() view returns (uint256)",
     "function incidents(uint256) view returns (uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed)"
@@ -35,9 +38,20 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
         setIsLoading(true);
         setError(null);
         const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-        const contract = new ethers.Contract(config.incidentManagerAddress, IncidentManagerAbi, provider);
+        if (!ethers.isAddress(config.incidentManagerAddress) || isZeroAddress(config.incidentManagerAddress)) {
+            setError('Analytics configuration missing: invalid incident manager address.');
+            setIsLoading(false);
+            return;
+        }
 
         try {
+            const code = await provider.getCode(config.incidentManagerAddress);
+            if (code === '0x') {
+                setError('Analytics contract not found on RPC. Check chain and address.');
+                return;
+            }
+
+            const contract = new ethers.Contract(config.incidentManagerAddress, IncidentManagerAbi, provider);
             // SecureIncidentManager uses nextIncidentId counter (1-based)
             const nextId = await contract.nextIncidentId();
             const count = Number(nextId);
@@ -118,7 +132,20 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
 
     const exportCSV = async () => {
         try {
+            if (!config.incidentManagerAddress || !config.rpcUrl) {
+                alert('Analytics configuration missing.');
+                return;
+            }
             const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+            if (!ethers.isAddress(config.incidentManagerAddress) || isZeroAddress(config.incidentManagerAddress)) {
+                alert('Invalid incident manager address.');
+                return;
+            }
+            const code = await provider.getCode(config.incidentManagerAddress);
+            if (code === '0x') {
+                alert('Analytics contract not found on RPC.');
+                return;
+            }
             const contract = new ethers.Contract(config.incidentManagerAddress, IncidentManagerAbi, provider);
             const nextId = await contract.nextIncidentId();
             const count = Number(nextId);
