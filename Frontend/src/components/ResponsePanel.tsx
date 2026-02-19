@@ -21,7 +21,7 @@ const ResponsePanel = () => {
   const { role, setRole } = useRole();
 
   const { address, isConnected } = useAccount();
-  const reporterAddress = config.healthReporterAddress;
+  const reporterAddress = config.monitorAddress;
   const registryAddress = config.registryAddress;
   const chainId = config.chainId;
 
@@ -163,12 +163,12 @@ const ResponsePanel = () => {
         ];
         const incidentManager = new ethers.Contract(incidentManagerAddress, IncidentManagerAbi, signer);
         const nextId = await incidentManager.nextIncidentId();
-        if (nextId <= 1n) {
+        if (nextId <= BigInt(1)) {
           setTxLoading(false);
           setActionStatus('No incidents to resolve.');
           return;
         }
-        const latestIncidentId = nextId - 1n;
+        const latestIncidentId = nextId - BigInt(1);
         tx = await incidentManager.resolveIncident(latestIncidentId, 'Resolved via Dashboard');
       } else {
         setTxLoading(false);

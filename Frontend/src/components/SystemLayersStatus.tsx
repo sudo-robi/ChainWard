@@ -6,7 +6,7 @@ import { config } from '../config';
 
 const registryAddress = config.registryAddress;
 const monitorAddress = config.monitorAddress;
-const reporterAddress = config.healthReporterAddress;
+const reporterAddress = config.monitorAddress;
 const chainId = config.chainId;
 
 // ABIs

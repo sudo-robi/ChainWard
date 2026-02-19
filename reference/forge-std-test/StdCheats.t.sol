@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 pragma solidity >=0.8.13 <0.9.0;
 
-import {Test} from "forge-std/Test.sol";
-import {stdJson} from "forge-std/StdJson.sol";
-import {stdToml} from "../src/StdToml.sol";
+import {Test} from "lib/forge-std/src/Test.sol";
+import {StdCheats} from "lib/forge-std/src/StdCheats.sol";
+import {stdJson} from "lib/forge-std/src/StdJson.sol";
+import {stdToml} from "lib/forge-std/src/StdToml.sol";
 
 contract StdCheatsTest is Test {
     Bar test;
