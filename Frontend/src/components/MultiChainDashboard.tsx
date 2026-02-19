@@ -37,9 +37,29 @@ const MultiChainDashboard: React.FC<MultiChainDashboardProps> = ({ selectedChain
             setError('Multi-chain configuration missing.');
             return;
         }
+        
+        const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+        if (registryAddress.toLowerCase() === ZERO_ADDRESS || reporterAddress.toLowerCase() === ZERO_ADDRESS) {
+            setError('Configuration invalid: contract addresses not set.');
+            return;
+        }
+        
         setIsLoading(true);
         setError(null);
         const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+        
+        // Verify contracts exist on chain
+        const [registryCode, monitorCode] = await Promise.all([
+            provider.getCode(registryAddress),
+            provider.getCode(reporterAddress)
+        ]).catch(() => ['0x', '0x']);
+        
+        if (registryCode === '0x' || monitorCode === '0x') {
+            setError('Contracts not found on RPC. Check chain and addresses.');
+            setIsLoading(false);
+            return;
+        }
+        
         const registry = new ethers.Contract(registryAddress, RegistryAbi, provider);
         const monitor = new ethers.Contract(reporterAddress, MonitorAbi, provider);
 
