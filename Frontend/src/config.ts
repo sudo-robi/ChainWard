@@ -24,10 +24,10 @@ if (typeof window !== 'undefined') {
 
 export const config = {
     rpcUrl: USE_PROXY ? PROXY_URL : (process.env.NEXT_PUBLIC_RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc'),
-    monitorAddress: process.env.NEXT_PUBLIC_MONITOR_ADDRESS || '0x0000000000000000000000000000000000000000',
+    monitorAddress: process.env.NEXT_PUBLIC_MONITOR_ADDRESS || '0x7a5e0237E45574727aA4352244B1f72559BbA229',
     chainId: parseChainId(process.env.NEXT_PUBLIC_CHAIN_ID),
-    registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS || '0x0000000000000000000000000000000000000000',
-    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS || '0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4',
+    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS || '0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB',
 } as const;
 
 if (typeof window !== 'undefined') {

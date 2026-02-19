@@ -26,10 +26,9 @@ CHAIN_ID=${network.chainId}
 fs.writeFileSync(rootEnvPath, rootEnvContent);
 console.log('✅ Updated root .env');
 
-// Update frontend .env
-const frontendEnvPath = path.join(__dirname, '../frontend/.env');
-const frontendEnvContent = `
-NEXT_PUBLIC_RPC_URL=${network.rpcUrl}
+// Update frontend .env.local (note: directory is 'Frontend' with capital F)
+const frontendEnvPath = path.join(__dirname, '../Frontend/.env.local');
+const frontendEnvContent = `NEXT_PUBLIC_RPC_URL=${network.rpcUrl}
 NEXT_PUBLIC_MONITOR_ADDRESS=${network.contracts.HealthMonitor}
 NEXT_PUBLIC_CHAIN_ID=${network.chainId}
 NEXT_PUBLIC_REGISTRY_ADDRESS=${network.contracts.OrbitChainRegistry}
@@ -37,15 +36,23 @@ NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS=${network.contracts.IncidentManager}
 `;
 
 fs.writeFileSync(frontendEnvPath, frontendEnvContent);
-console.log('✅ Updated frontend/.env');
+console.log('✅ Updated Frontend/.env.local');
 
-// Update frontend config.ts to remove hardcoded fallbacks
-const configTsPath = path.join(__dirname, '../frontend/src/config.ts');
+// Update frontend config.ts with proper fallbacks
+const configTsPath = path.join(__dirname, '../Frontend/src/config.ts');
 const configTsContent = `// Configuration file that exposes environment variables
-// All values come from .env - no hardcoded fallbacks
+// All values come from .env - provides fallbacks for missing vars to prevent NaN/undefined errors
 
 const USE_PROXY = typeof window !== 'undefined';
 const PROXY_URL = typeof window !== 'undefined' ? \`\${window.location.origin}/api/rpc\` : '';
+
+// Validate and parse chainId: must be a positive integer, fallback to ${network.chainId}
+const parseChainId = (val?: string): number => {
+    const parsed = Number(val);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    console.warn('⚠️ Invalid or missing NEXT_PUBLIC_CHAIN_ID, using default ${network.chainId}');
+    return ${network.chainId};
+};
 
 if (typeof window !== 'undefined') {
     console.log('🔧 Config Debug - Environment Variables:', {
@@ -58,11 +65,11 @@ if (typeof window !== 'undefined') {
 }
 
 export const config = {
-    rpcUrl: USE_PROXY ? PROXY_URL : (process.env.NEXT_PUBLIC_RPC_URL!),
-    monitorAddress: process.env.NEXT_PUBLIC_MONITOR_ADDRESS!,
-    chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID!),
-    registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS!,
-    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS!,
+    rpcUrl: USE_PROXY ? PROXY_URL : (process.env.NEXT_PUBLIC_RPC_URL || '${network.rpcUrl}'),
+    monitorAddress: process.env.NEXT_PUBLIC_MONITOR_ADDRESS || '${network.contracts.HealthMonitor}',
+    chainId: parseChainId(process.env.NEXT_PUBLIC_CHAIN_ID),
+    registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS || '${network.contracts.OrbitChainRegistry}',
+    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS || '${network.contracts.IncidentManager}',
 } as const;
 
 if (typeof window !== 'undefined') {
@@ -72,7 +79,7 @@ if (typeof window !== 'undefined') {
 `;
 
 fs.writeFileSync(configTsPath, configTsContent);
-console.log('✅ Updated frontend/src/config.ts (removed hardcoded fallbacks)');
+console.log('✅ Updated Frontend/src/config.ts (with contract address fallbacks)');
 
 console.log('\n📝 Contract addresses synced from config/contracts.json');
 console.log(`   Network: Arbitrum Sepolia (${network.chainId})`);
