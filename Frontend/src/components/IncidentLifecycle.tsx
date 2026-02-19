@@ -1,15 +1,6 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { config } from '../config';
-
-const monitorAddress = config.incidentManagerAddress;
-
-const MonitorAbi = [
-  "function nextIncidentId() view returns (uint256)",
-  "function incidents(uint256) view returns (uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed)",
-  "event IncidentReported(uint256 indexed incidentId, address indexed reporter, string incidentType, uint256 severity, uint256 timestamp)"
-];
+import React, { useMemo } from 'react';
+import { useChainWardData } from '../context/ChainWardDataProvider';
 
 const stages = [
   { label: 'Detection', key: 'detected' },
@@ -19,87 +10,30 @@ const stages = [
 ];
 
 const IncidentLifecycle = () => {
-  const [currentStage, setCurrentStage] = useState(0);
-  const [lastIncident, setLastIncident] = useState<any>(null);
+  const { incidents, isLoading } = useChainWardData();
 
-  useEffect(() => {
-    async function fetchLifecycle() {
-      if (!monitorAddress) return;
-      const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-      const monitor = new ethers.Contract(monitorAddress, MonitorAbi, provider);
-      try {
-        const nextId = await monitor.nextIncidentId();
-        const count = Number(nextId);
-
-        if (count === 0) {
-          setCurrentStage(0);
-          setLastIncident(null);
-          return;
-        }
-
-        // Fetch latest incident
-        const latestId = count; // 1-based index, last one is count
-        const incident = await monitor.incidents(latestId);
-
-        // Construct incident object for display
-        // Note: Contract struct returns array-like or object depending on ethers version/config
-        // We'll trust the ABI decoding usually gives an object with keys if names are in ABI
-        const incidentData = {
-          id: incident.id,
-          incidentType: incident.incidentType,
-          timestamp: incident.timestamp,
-          description: incident.description,
-          severity: incident.severity,
-          resolved: incident.resolved,
-          validations: incident.validations
-        };
-
-        setLastIncident(incidentData);
-
-        // Determine Stage
-        // 0 (Detection): Always active if we found an incident
-        let stage = 0;
-
-        // 1 (Validation): If validations > 0
-        if (Number(incident.validations) > 0) {
-          stage = 1;
-        }
-
-        // 2 (On-chain Record): If it's validated, it's recorded. 
-        // We can treat this as "Confirmed" or same as validation in this simple model.
-        // Let's say if validations >= 1, it's recorded.
-        if (Number(incident.validations) > 0) {
-          stage = 2;
-        }
-
-        // 3 (Automated Response): If resolved
-        if (incident.resolved) {
-          stage = 3;
-        }
-
-        setCurrentStage(stage);
-
-      } catch (e) {
-        console.error("Lifecycle fetch error:", e);
-        setCurrentStage(0);
-        setLastIncident(null);
-      }
+  // Derive lifecycle stage from shared incident data
+  const { currentStage, lastIncident } = useMemo(() => {
+    if (incidents.length === 0) {
+      return { currentStage: 0, lastIncident: null };
     }
-    fetchLifecycle();
 
-    // Set up listener for updates
-    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-    const monitor = new ethers.Contract(monitorAddress!, MonitorAbi, provider);
-    const onReported = () => fetchLifecycle();
+    // Get the most recent incident (highest ID)
+    const sorted = [...incidents].sort((a, b) => Number(b.id) - Number(a.id));
+    const latest = sorted[0];
 
-    // We can just poll or re-fetch on generic block updates for simplicity given it's a dashboard
-    // But let's add the specific listener if possible
-    monitor.on('IncidentReported', onReported);
+    let stage = 0; // Detection: always active if we found an incident
 
-    return () => {
-      monitor.removeAllListeners('IncidentReported');
-    };
-  }, []);
+    if (latest.validations > 0) {
+      stage = 2; // Validated + On-chain Record
+    }
+
+    if (latest.resolved) {
+      stage = 3; // Full lifecycle complete
+    }
+
+    return { currentStage: stage, lastIncident: latest };
+  }, [incidents]);
 
   return (
     <section className="p-4 sm:p-6 bg-card rounded-xl shadow border border-card-border">
@@ -122,8 +56,8 @@ const IncidentLifecycle = () => {
             return (
               <div key={stage.key} className="flex flex-col items-center text-center">
                 <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${isComplete
-                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
-                    : 'bg-background text-secondary border-card-border'
+                  ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
+                  : 'bg-background text-secondary border-card-border'
                   } ${isCurrent ? 'animate-pulse scale-110' : ''}`}>
                   {isComplete ? '✓' : idx + 1}
                 </div>
@@ -150,14 +84,14 @@ const IncidentLifecycle = () => {
           <div className="text-sm font-medium mb-2">{lastIncident.description}</div>
           <div className="flex gap-3 text-xs text-secondary">
             <span className="flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${Number(lastIncident.severity) === 2 ? 'bg-red-500' :
-                  Number(lastIncident.severity) === 1 ? 'bg-orange-500' :
-                    'bg-yellow-500'
+              <span className={`w-2 h-2 rounded-full ${lastIncident.severity === 2 ? 'bg-red-500' :
+                lastIncident.severity === 1 ? 'bg-orange-500' :
+                  'bg-yellow-500'
                 }`}></span>
-              {Number(lastIncident.severity) === 2 ? 'Critical' : Number(lastIncident.severity) === 1 ? 'High' : 'Medium'}
+              {lastIncident.severity === 2 ? 'Critical' : lastIncident.severity === 1 ? 'High' : 'Medium'}
             </span>
             <span>•</span>
-            <span className="font-mono">{new Date(Number(lastIncident.timestamp) * 1000).toLocaleTimeString()}</span>
+            <span className="font-mono">{new Date(lastIncident.timestamp * 1000).toLocaleTimeString()}</span>
             <span>•</span>
             <span className="font-mono">{lastIncident.incidentType}</span>
           </div>

@@ -1,111 +1,31 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ethers } from 'ethers';
-import { config } from '../config';
-
-const registryAddress = config.registryAddress;
-const monitorAddress = config.monitorAddress;
-const reporterAddress = config.monitorAddress;
-const chainId = config.chainId;
-
-// ABIs
-const RegistryAbi = [
-  "function chains(uint256) view returns (address operator, uint256 expectedBlockTime, uint256 maxBlockLag, bool isActive, string name)",
-  "function getBond(uint256) view returns (uint256)"
-];
-
-const ReporterAbi = [
-  "function lastSignalTime(uint256) view returns (uint256)",
-  "function lastL1BatchTimestamp(uint256) view returns (uint256)"
-];
-
-const IncidentAbi = [
-  "function getIncident(uint256) view returns (uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed)"
-];
+import { useChainWardData } from '../context/ChainWardDataProvider';
 
 const SystemLayersStatus = () => {
-  const [governance, setGovernance] = useState('Loading...');
-  const [detection, setDetection] = useState('Loading...');
-  const [validation, setValidation] = useState('Loading...');
-  const [bridge, setBridge] = useState('Loading...');
-  const [incidentHistory, setIncidentHistory] = useState('Loading...');
-  const [response, setResponse] = useState('Loading...');
+  const { chainConfig, lastSignalTime: signalTime, lastL1BatchTimestamp: l1Time, isLoading } = useChainWardData();
 
-  useEffect(() => {
-    async function fetchStatus() {
-      const incidentManagerAddress = config.incidentManagerAddress;
-      if (!registryAddress || !reporterAddress || !incidentManagerAddress) {
-        const errorMsg = 'Not Configured (Env)';
-        setGovernance(errorMsg);
-        setDetection(errorMsg);
-        setValidation(errorMsg);
-        setIncidentHistory(errorMsg);
-        setResponse(errorMsg);
-        return;
-      }
+  // Derive all statuses from shared data (pure computation — no async!)
+  const now = Math.floor(Date.now() / 1000);
 
-      const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-      const registry = new ethers.Contract(registryAddress, RegistryAbi, provider);
-      const reporter = new ethers.Contract(reporterAddress, ReporterAbi, provider);
-      const incidents = new ethers.Contract(incidentManagerAddress, IncidentAbi, provider);
+  const governance = !chainConfig ? (isLoading ? 'Loading...' : 'Not Configured')
+    : chainConfig.operator && chainConfig.operator !== ethers.ZeroAddress ? 'Active' : 'Not Set';
 
-      try {
-        // Governance andValidation: Get chain config
-        const chainConfig = await registry.chains(chainId);
-        const { operator, isActive, maxBlockLag } = chainConfig;
+  const validation = !chainConfig ? (isLoading ? 'Loading...' : 'Not Configured')
+    : chainConfig.maxBlockLag > BigInt(0) ? 'Configured' : 'Not Configured';
 
-        setGovernance(operator && operator !== ethers.ZeroAddress ? 'Active' : 'Not Set');
-        setValidation(maxBlockLag > BigInt(0) ? 'Configured' : 'Not Configured');
+  const detection = isLoading ? 'Loading...'
+    : signalTime > 0 && (now - signalTime) < 300 ? 'Active' : 'Stale';
 
-        // Detection: lastSignalTime recent
-        const last = await reporter.lastSignalTime(chainId);
-        const l1Time = await reporter.lastL1BatchTimestamp(chainId);
-        const now = Math.floor(Date.now() / 1000);
-        const lastNum = Number(last);
-        // Detection is active if signal is less than 5 minutes old (allow for network delays)
-        console.log('Detection debug:', { lastNum, now, age: now - lastNum, isActive: lastNum > 0 && (now - lastNum) < 300 });
-        setDetection(lastNum > 0 && (now - lastNum) < 300 ? 'Active' : 'Stale');
+  const bridge = isLoading ? 'Loading...'
+    : l1Time > 0 && (now - l1Time) < 3600 ? 'Connective' : 'Stalled';
 
-        // Bridge is connected if L1 timestamp is less than 1 hour old
-        const l1Age = now - Number(l1Time);
-        const bridgeHealthy = Number(l1Time) > 0 && l1Age < 3600;
-        console.log('Bridge debug:', { l1Time: Number(l1Time), now, age: l1Age, healthy: bridgeHealthy });
-        setBridge(bridgeHealthy ? 'Connective' : 'Stalled');
+  const incidentHistory = isLoading ? 'Loading...' : 'Healthy';
 
-        // Incident History: For now, always show Healthy since SecureIncidentManager
-        // doesn't have a getChainIncidents() method and tracks incidents globally, not per-chain
-        setIncidentHistory('Healthy');
-
-        // Response: Active status
-        setResponse(isActive ? 'Active' : 'Inactive');
-
-      } catch (e: any) {
-        console.error("SystemLayersStatus fetch error:", e);
-        
-        // Don't treat rate limits as hard failures - show last known state instead
-        if (e.code === 'SERVER_ERROR' && e.info?.responseBody?.includes('rate limited')) {
-          console.warn('RPC rate limited - using cached/last known state');
-          // Don't update the state, keep showing previous values
-          return;
-        }
-        
-        const errorMsg = e.code === 'SERVER_ERROR' ? 'RPC Error (429)' :
-          e.code === 'NETWORK_ERROR' ? 'Network Down' :
-            e.message?.includes('rate limit') ? 'Rate Limited' :
-              'Check Config';
-        setGovernance(errorMsg);
-        setDetection(errorMsg);
-        setValidation(errorMsg);
-        setBridge(errorMsg);
-        setIncidentHistory(errorMsg);
-        setResponse(errorMsg);
-      }
-    }
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  const response = !chainConfig ? (isLoading ? 'Loading...' : 'Not Configured')
+    : chainConfig.isActive ? 'Active' : 'Inactive';
 
   const statusColor = (status: string) => {
     if (status === 'Active' || status === 'Configured' || status === 'Healthy' || status === 'Ready' || status === 'Connective') return 'text-success';
@@ -114,15 +34,11 @@ const SystemLayersStatus = () => {
     return 'text-secondary';
   };
 
-  const getHealthPercentage = () => {
-    const layers = [governance, detection, validation, bridge, incidentHistory, response];
-    const healthyCount = layers.filter(l => 
-      l === 'Active' || l === 'Configured' || l === 'Healthy' || l === 'Ready' || l === 'Connective'
-    ).length;
-    return Math.round((healthyCount / layers.length) * 100);
-  };
-
-  const healthPercent = getHealthPercentage();
+  const layers = [governance, detection, validation, bridge, incidentHistory, response];
+  const healthyCount = layers.filter(l =>
+    l === 'Active' || l === 'Configured' || l === 'Healthy' || l === 'Ready' || l === 'Connective'
+  ).length;
+  const healthPercent = Math.round((healthyCount / layers.length) * 100);
 
   return (
     <section className="p-4 sm:p-6 bg-card rounded-xl shadow border border-card-border">
@@ -134,9 +50,9 @@ const SystemLayersStatus = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="mb-4 h-2 bg-background rounded-full overflow-hidden">
-        <div 
+        <div
           className={`h-full transition-all duration-1000 ${healthPercent === 100 ? 'bg-green-500' : healthPercent >= 70 ? 'bg-yellow-500' : 'bg-red-500'}`}
           style={{ width: `${healthPercent}%` }}
         ></div>

@@ -1,20 +1,10 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
+import React, { useState, useMemo, useEffect } from 'react';
 import { config } from '../config';
+import { useChainWardData } from '../context/ChainWardDataProvider';
 import IncidentManagementActions from './IncidentManagementActions';
-
-const monitorAddress = config.incidentManagerAddress;
-const chainId = config.chainId;
-
-const MonitorAbi = [
-  "event IncidentReported(uint256 indexed incidentId, address indexed reporter, string incidentType, uint256 severity, uint256 timestamp)",
-  "event IncidentResolved(uint256 indexed incidentId, uint256 timestamp)",
-  "function getIncident(uint256 incidentId) view returns (tuple(uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed))",
-  "function nextIncidentId() view returns (uint256)"
-];
 
 function getPriority(priority: number) {
   switch (priority) {
@@ -31,107 +21,18 @@ interface IncidentHistoryProps {
 }
 
 const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) => {
-  const [incidents, setIncidents] = useState<any[]>([]);
+  const { incidents: sharedIncidents, isLoading, error: globalError, lastUpdate, refetch } = useChainWardData();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'resolved'>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | '0' | '1' | '2' | '3'>('all');
   const [bookmarks, setBookmarks] = useState<string[]>([]);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  const fetchIncidents = async () => {
-    if (!monitorAddress) {
-      setError('Incident Manager address not configured.');
-      setIncidents([]);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-    const monitor = new ethers.Contract(monitorAddress, MonitorAbi, provider);
-    try {
-      // Use nextIncidentId to know how many incidents exist
-      const nextId = await monitor.nextIncidentId();
-      const count = Number(nextId);
-
-      if (count === 0) {
-        setIncidents([]);
-        setLastUpdate(new Date());
-        return;
-      }
-
-      // Fetch all incidents by ID (1-based)
-      const ids = Array.from({ length: count }, (_, i) => i + 1);
-      const BATCH_SIZE = 5;
-      const allIncidentsRaw: any[] = [];
-
-      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-        const batchIds = ids.slice(i, i + BATCH_SIZE);
-        const batchResults = await Promise.all(
-          batchIds.map(id => monitor.getIncident(id).catch(() => null))
-        );
-        allIncidentsRaw.push(...batchResults);
-        if (i + BATCH_SIZE < ids.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-
-      const detailedIncidents = allIncidentsRaw
-        .filter(inc => inc !== null && Number(inc.id) > 0)
-        .map(incData => ({
-          id: incData.id.toString(),
-          chainId: String(config.chainId),
-          reason: incData.description || incData.incidentType,
-          triggeredAt: new Date(Number(incData.timestamp) * 1000).toLocaleString(),
-          resolvedAt: Number(incData.resolvedAt) > 0 ? new Date(Number(incData.resolvedAt) * 1000).toLocaleString() : null,
-          priority: Number(incData.severity), // Map severity to priority display
-          parentId: "0",
-          rca: '',
-          resolved: incData.resolved,
-          comments: [],
-          sla: Number(incData.resolvedAt) > 0
-            ? `${Math.floor((Number(incData.resolvedAt) - Number(incData.timestamp)) / 60)}m`
-            : `${Math.floor((Date.now() / 1000 - Number(incData.timestamp)) / 60)}m (Active)`
-        }));
-
-      setIncidents(detailedIncidents.reverse());
-      setLastUpdate(new Date());
-    } catch (e: any) {
-      console.error("Incident history fetch error:", e);
-      const errorMsg = e?.message?.includes('429') || e?.message?.includes('rate limit')
-        ? 'Rate limited by RPC provider. Wait a moment &retry.'
-        : e?.message?.includes('block range') || e?.message?.includes('query returned')
-          ? 'Block range too large. Try filtering by chain ID.'
-          : e?.message?.includes('NETWORK') || e?.message?.includes('fetch failed')
-            ? 'Network connection failed.'
-            : `Error fetching incidents: ${e?.message?.slice(0, 50) || 'Unknown error'}`;
-      setError(errorMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchIncidents();
     const saved = localStorage.getItem('incident-bookmarks');
     if (saved) setBookmarks(JSON.parse(saved));
-
-    // Auto-refresh every 20 seconds if enabled
-    const interval = autoRefresh ? setInterval(fetchIncidents, 20000) : null;
-
-    const handleRefresh = (e: any) => {
-      fetchIncidents();
-    };
-
-    window.addEventListener('chainward-refresh', handleRefresh);
-    return () => {
-      if (interval) clearInterval(interval);
-      window.removeEventListener('chainward-refresh', handleRefresh);
-    };
-  }, [selectedChainId, autoRefresh]);
+  }, []);
 
   const toggleBookmark = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -141,6 +42,28 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
     setBookmarks(newBookmarks);
     localStorage.setItem('incident-bookmarks', JSON.stringify(newBookmarks));
   };
+
+  // Transform shared incidents into display format
+  const incidents = useMemo(() =>
+    sharedIncidents
+      .map(inc => ({
+        id: inc.id,
+        chainId: String(config.chainId),
+        reason: inc.description || inc.incidentType,
+        triggeredAt: new Date(inc.timestamp * 1000).toLocaleString(),
+        resolvedAt: inc.resolvedAt > 0 ? new Date(inc.resolvedAt * 1000).toLocaleString() : null,
+        priority: inc.severity,
+        parentId: "0",
+        rca: '',
+        resolved: inc.resolved,
+        comments: [],
+        sla: inc.resolvedAt > 0
+          ? `${Math.floor((inc.resolvedAt - inc.timestamp) / 60)}m`
+          : `${Math.floor((Date.now() / 1000 - inc.timestamp) / 60)}m (Active)`
+      }))
+      .reverse(),
+    [sharedIncidents]
+  );
 
   const filteredIncidents = incidents.filter(inc => {
     const matchesSearch = inc.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -204,7 +127,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
             <option value="3">Priority: P3</option>
           </select>
           <button
-            onClick={fetchIncidents}
+            onClick={refetch}
             disabled={isLoading}
             aria-label="Refresh Audit Trail"
             className="p-2 bg-primary text-white rounded disabled:opacity-50"
@@ -214,18 +137,15 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
         </div>
       </div>
 
-      {error && (
+      {globalError && (
         <div className="mb-4 p-4 rounded-lg bg-red-50/10 border-2 border-red-500/30" role="alert" aria-live="assertive">
           <div className="flex items-start gap-3">
             <span className="text-2xl">📋</span>
             <div className="flex-1">
               <div className="font-bold text-sm mb-1">Incident History Error</div>
-              <div className="text-sm opacity-90 mb-2">{error}</div>
+              <div className="text-sm opacity-90 mb-2">{globalError}</div>
               <button
-                onClick={() => {
-                  setError(null);
-                  fetchIncidents();
-                }}
+                onClick={refetch}
                 className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded transition-colors font-semibold focus:ring-2 focus:ring-white/50 focus:outline-none"
                 aria-label="Retry loading incident history"
               >
@@ -236,7 +156,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
         </div>
       )}
 
-      {isLoading ? (
+      {isLoading && incidents.length === 0 ? (
         <div className="space-y-3 animate-pulse">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="p-3 rounded-lg border border-card-border bg-card">
@@ -326,7 +246,7 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
                     >
                       <IncidentManagementActions
                         incidentId={incident.id}
-                        onActionComplete={fetchIncidents}
+                        onActionComplete={refetch}
                       />
                     </div>
                   )}

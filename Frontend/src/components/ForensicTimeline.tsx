@@ -1,98 +1,11 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { config } from '../config';
-
-const incidentManagerAddress = config.incidentManagerAddress;
-
-const IncidentAbi = [
-  'event IncidentReported(uint256 indexed incidentId, address indexed reporter, string incidentType, uint256 severity, uint256 timestamp)',
-  'event IncidentResolved(uint256 indexed incidentId, uint256 timestamp)'
-];
-
-interface TimelineEvent {
-  type: string;
-  time: string;
-  reason?: string;
-  incidentId?: string;
-  reporter?: string;
-  description?: string;
-  timestamp: number;
-}
+import React, { useState } from 'react';
+import { useChainWardData, TimelineEvent } from '../context/ChainWardDataProvider';
 
 const ForensicTimeline = () => {
-  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
-
-  useEffect(() => {
-    async function fetchTimeline() {
-      if (!incidentManagerAddress) return;
-      const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-      const incidentManager = new ethers.Contract(incidentManagerAddress, IncidentAbi, provider);
-      try {
-        // IncidentReported has (incidentId indexed, reporter indexed, incidentType, severity, timestamp)
-        const raisedFilter = incidentManager.filters.IncidentReported();
-        // IncidentResolved has (incidentId indexed, timestamp)
-        const resolvedFilter = incidentManager.filters.IncidentResolved();
-
-        const latestBlock = await provider.getBlockNumber();
-        const fromBlock = Math.max(0, latestBlock - 100000);
-
-        const [raisedLogs, resolvedLogs] = await Promise.all([
-          incidentManager.queryFilter(raisedFilter, fromBlock, 'latest'),
-          incidentManager.queryFilter(resolvedFilter, fromBlock, 'latest')
-        ]);
-
-        const events: TimelineEvent[] = [];
-
-        raisedLogs.forEach(log => {
-          const eventLog = log as ethers.EventLog;
-          events.push({
-            type: 'Reported',
-            reason: eventLog.args.incidentType,
-            time: new Date(Number(eventLog.args.timestamp) * 1000).toLocaleString(),
-            incidentId: eventLog.args.incidentId.toString(),
-            reporter: eventLog.args.reporter,
-            description: eventLog.args.incidentType,
-            timestamp: Number(eventLog.args.timestamp)
-          });
-        });
-
-        resolvedLogs.forEach(log => {
-          const eventLog = log as ethers.EventLog;
-          events.push({
-            type: 'Resolved',
-            reason: 'Incident Resolved',
-            time: new Date(Number(eventLog.args.timestamp) * 1000).toLocaleString(),
-            incidentId: eventLog.args.incidentId.toString(),
-            description: 'Incident resolved on-chain',
-            timestamp: Number(eventLog.args.timestamp)
-          });
-        });
-
-        // Sort by raw timestamp (chronological)
-        events.sort((a, b) => a.timestamp - b.timestamp);
-        setTimeline(events);
-      } catch (e: any) {
-        console.error('Error fetching timeline:', e);
-        // Show actionable error message to user
-        const errorMsg = e?.code === 'SERVER_ERROR' ? 'RPC Error (429)'
-          : e?.code === 'NETWORK_ERROR' ? 'Network Down'
-            : e?.message?.includes('rate limit') ? 'Rate Limited'
-              : 'Check Config';
-        setTimeline([{
-          type: 'raised',
-          reason: errorMsg,
-          time: new Date().toLocaleString(),
-          incidentId: '0',
-          description: 'Unable to fetch timeline events',
-          timestamp: Date.now() / 1000
-        }]);
-      }
-    }
-    fetchTimeline();
-  }, []);
+  const { timelineEvents: timeline } = useChainWardData();
 
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [replaying, setReplaying] = useState(false);

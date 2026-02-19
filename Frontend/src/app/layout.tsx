@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RoleProvider } from '../context/RoleContext';
+import { ChainWardDataProvider } from '../context/ChainWardDataProvider';
 import { Providers } from './providers';
 
 const geistSans = Geist({
@@ -32,9 +33,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <RoleProvider>
-            {children}
-          </RoleProvider>
+          <ChainWardDataProvider>
+            <RoleProvider>
+              {children}
+            </RoleProvider>
+          </ChainWardDataProvider>
         </Providers>
       </body>
     </html>
