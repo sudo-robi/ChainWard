@@ -10,10 +10,10 @@ const monitorAddress = config.incidentManagerAddress;
 const chainId = config.chainId;
 
 const MonitorAbi = [
-  "event IncidentRaised(uint256 indexed incidentId, uint256 indexed chainId, uint8 indexed failureType, uint8 severity, uint8 priority, string description, uint256 timestamp)",
-  "event IncidentResolved(uint256 indexed incidentId, uint256 indexed chainId, string reason, uint256 timestamp, uint256 resolvedAt)",
-  "function getIncident(uint256 incidentId) view returns (tuple(uint256 chainId, uint256 detectedAt, uint256 resolvedAt, uint8 failureType, uint8 severity, uint8 priority, uint256 lastHealthyBlock, uint256 lastHealthyTimestamp, string description, bool resolved, uint256 parentIncidentId, string rcaTag))",
-  "function getIncidentComments(uint256 incidentId) view returns (string[])"
+  "event IncidentReported(uint256 indexed incidentId, address indexed reporter, string incidentType, uint256 severity, uint256 timestamp)",
+  "event IncidentResolved(uint256 indexed incidentId, uint256 timestamp)",
+  "function getIncident(uint256 incidentId) view returns (tuple(uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed))",
+  "function nextIncidentId() view returns (uint256)"
 ];
 
 function getPriority(priority: number) {
@@ -53,35 +53,49 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
     const provider = new ethers.JsonRpcProvider(config.rpcUrl);
     const monitor = new ethers.Contract(monitorAddress, MonitorAbi, provider);
     try {
-      const filter = monitor.filters.IncidentRaised(null, null); // Fetch all for comprehensive history
-      const latestBlock = await provider.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 5000);
-      const logs = await monitor.queryFilter(filter, fromBlock, 'latest');
+      // Use nextIncidentId to know how many incidents exist
+      const nextId = await monitor.nextIncidentId();
+      const count = Number(nextId);
 
-      const detailedIncidents = await Promise.all(logs.map(async (log) => {
-        const eventLog = log as ethers.EventLog;
-        const incidentId = eventLog.args[0];
-        const [incData, comments] = await Promise.all([
-          monitor.getIncident(incidentId),
-          monitor.getIncidentComments(incidentId)
-        ]);
+      if (count === 0) {
+        setIncidents([]);
+        setLastUpdate(new Date());
+        return;
+      }
 
-        return {
-          id: incidentId.toString(),
-          chainId: incData.chainId.toString(),
-          reason: incData.description,
-          triggeredAt: new Date(Number(incData.detectedAt) * 1000).toLocaleString(),
+      // Fetch all incidents by ID (1-based)
+      const ids = Array.from({ length: count }, (_, i) => i + 1);
+      const BATCH_SIZE = 5;
+      const allIncidentsRaw: any[] = [];
+
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batchIds = ids.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batchIds.map(id => monitor.getIncident(id).catch(() => null))
+        );
+        allIncidentsRaw.push(...batchResults);
+        if (i + BATCH_SIZE < ids.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      const detailedIncidents = allIncidentsRaw
+        .filter(inc => inc !== null && Number(inc.id) > 0)
+        .map(incData => ({
+          id: incData.id.toString(),
+          chainId: String(config.chainId),
+          reason: incData.description || incData.incidentType,
+          triggeredAt: new Date(Number(incData.timestamp) * 1000).toLocaleString(),
           resolvedAt: Number(incData.resolvedAt) > 0 ? new Date(Number(incData.resolvedAt) * 1000).toLocaleString() : null,
-          priority: Number(incData.priority),
-          parentId: incData.parentIncidentId.toString(),
-          rca: incData.rcaTag,
+          priority: Number(incData.severity), // Map severity to priority display
+          parentId: "0",
+          rca: '',
           resolved: incData.resolved,
-          comments: comments,
+          comments: [],
           sla: Number(incData.resolvedAt) > 0
-            ? `${Math.floor((Number(incData.resolvedAt) - Number(incData.detectedAt)) / 60)}m`
-            : `${Math.floor((Date.now() / 1000 - Number(incData.detectedAt)) / 60)}m (Active)`
-        };
-      }));
+            ? `${Math.floor((Number(incData.resolvedAt) - Number(incData.timestamp)) / 60)}m`
+            : `${Math.floor((Date.now() / 1000 - Number(incData.timestamp)) / 60)}m (Active)`
+        }));
 
       setIncidents(detailedIncidents.reverse());
       setLastUpdate(new Date());
@@ -90,10 +104,10 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
       const errorMsg = e?.message?.includes('429') || e?.message?.includes('rate limit')
         ? 'Rate limited by RPC provider. Wait a moment &retry.'
         : e?.message?.includes('block range') || e?.message?.includes('query returned')
-        ? 'Block range too large. Try filtering by chain ID.'
-        : e?.message?.includes('NETWORK') || e?.message?.includes('fetch failed')
-        ? 'Network connection failed.'
-        : `Error fetching incidents: ${e?.message?.slice(0, 50) || 'Unknown error'}`;
+          ? 'Block range too large. Try filtering by chain ID.'
+          : e?.message?.includes('NETWORK') || e?.message?.includes('fetch failed')
+            ? 'Network connection failed.'
+            : `Error fetching incidents: ${e?.message?.slice(0, 50) || 'Unknown error'}`;
       setError(errorMsg);
     } finally {
       setIsLoading(false);
@@ -131,12 +145,12 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
   const filteredIncidents = incidents.filter(inc => {
     const matchesSearch = inc.reason.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inc.id.includes(searchQuery) ||
-      (inc.chainId &&inc.chainId.toString().includes(searchQuery));
+      (inc.chainId && inc.chainId.toString().includes(searchQuery));
     const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? !inc.resolved : inc.resolved);
     const matchesPriority = priorityFilter === 'all' || inc.priority.toString() === priorityFilter;
     const matchesChain = !selectedChainId || inc.chainId.toString() === selectedChainId;
 
-    return matchesSearch &&matchesStatus &&matchesPriority &&matchesChain;
+    return matchesSearch && matchesStatus && matchesPriority && matchesChain;
   });
 
   return (
@@ -153,9 +167,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
         <div className="flex flex-wrap gap-2 w-full md:w-auto items-center">
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`text-xs px-3 py-1.5 rounded-full transition-all font-semibold flex items-center gap-1.5 focus:ring-2 focus:ring-offset-1 focus:outline-none ${
-              autoRefresh ? 'bg-green-500/20 text-green-500 focus:ring-green-500' : 'bg-gray-500/20 text-gray-500 focus:ring-gray-500'
-            }`}
+            className={`text-xs px-3 py-1.5 rounded-full transition-all font-semibold flex items-center gap-1.5 focus:ring-2 focus:ring-offset-1 focus:outline-none ${autoRefresh ? 'bg-green-500/20 text-green-500 focus:ring-green-500' : 'bg-gray-500/20 text-gray-500 focus:ring-gray-500'
+              }`}
             aria-label={`Auto-refresh is ${autoRefresh ? 'enabled' : 'disabled'}. Click to ${autoRefresh ? 'pause' : 'enable'}`}
             aria-pressed={autoRefresh}
           >
@@ -248,8 +261,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
               const isExpanded = expandedId === incident.id;
               const isBookmarked = bookmarks.includes(incident.id);
               return (
-                <article 
-                  key={incident.id} 
+                <article
+                  key={incident.id}
                   className={`p-3 rounded-lg border bg-opacity-50 transition-all ${incident.resolved ? 'bg-green-50/10 border-green-500/20' : 'bg-red-50/10 border-red-500/20'}`}
                   aria-label={`Incident ${incident.id}: ${incident.reason}, Priority ${prio.label}, Status: ${incident.resolved ? 'Resolved' : 'Active'}`}
                 >
@@ -268,59 +281,59 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
                     aria-controls={`incident-details-${incident.id}`}
                   >
                     <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => toggleBookmark(incident.id, e)}
-                      className={`text-sm transition-opacity focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded ${isBookmarked ? 'text-yellow-500' : 'opacity-20 group-hover:opacity-100'}`}
-                      aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
-                      aria-pressed={isBookmarked}
+                      <button
+                        onClick={(e) => toggleBookmark(incident.id, e)}
+                        className={`text-sm transition-opacity focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded ${isBookmarked ? 'text-yellow-500' : 'opacity-20 group-hover:opacity-100'}`}
+                        aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+                        aria-pressed={isBookmarked}
+                      >
+                        ★
+                      </button>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${prio.color}`}>
+                        {prio.label}
+                      </span>
+                      <span className="font-bold text-sm">#{incident.id}</span>
+                      <span className="text-sm line-clamp-1">{incident.reason}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${incident.resolved ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                        {incident.resolved ? 'Resolved' : 'Active'}
+                      </span>
+                      <span className={`text-[10px] opacity-40 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-secondary-foreground border-t border-card-border pt-2 mt-2">
+                    <div><span className="opacity-60">Chain:</span> {incident.chainId}</div>
+                    <div><span className="opacity-60">Detected:</span> {incident.triggeredAt}</div>
+                    {incident.resolvedAt && <div><span className="opacity-60">Resolved:</span> {incident.resolvedAt}</div>}
+                    {incident.parentId !== "0" && (
+                      <div className="text-blue-400 font-semibold px-1 rounded bg-blue-400/5">Cluster: #{incident.parentId}</div>
+                    )}
+                    {incident.rca && (
+                      <div className="text-purple-400 font-semibold px-1 rounded bg-purple-400/5">RCA: {incident.rca}</div>
+                    )}
+                  </div>
+
+                  {isExpanded && (
+                    <div
+                      id={`incident-details-${incident.id}`}
+                      className="mt-3 pt-3 border-t border-dashed border-card-border space-y-4"
+                      role="region"
+                      aria-label={`Incident ${incident.id} management actions`}
                     >
-                      ★
-                    </button>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${prio.color}`}>
-                      {prio.label}
-                    </span>
-                    <span className="font-bold text-sm">#{incident.id}</span>
-                    <span className="text-sm line-clamp-1">{incident.reason}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${incident.resolved ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-                      {incident.resolved ? 'Resolved' : 'Active'}
-                    </span>
-                    <span className={`text-[10px] opacity-40 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-secondary-foreground border-t border-card-border pt-2 mt-2">
-                  <div><span className="opacity-60">Chain:</span> {incident.chainId}</div>
-                  <div><span className="opacity-60">Detected:</span> {incident.triggeredAt}</div>
-                  {incident.resolvedAt &&<div><span className="opacity-60">Resolved:</span> {incident.resolvedAt}</div>}
-                  {incident.parentId !== "0" &&(
-                    <div className="text-blue-400 font-semibold px-1 rounded bg-blue-400/5">Cluster: #{incident.parentId}</div>
+                      <IncidentManagementActions
+                        incidentId={incident.id}
+                        onActionComplete={fetchIncidents}
+                      />
+                    </div>
                   )}
-                  {incident.rca &&(
-                    <div className="text-purple-400 font-semibold px-1 rounded bg-purple-400/5">RCA: {incident.rca}</div>
-                  )}
-                </div>
-
-                {isExpanded &&(
-                  <div 
-                    id={`incident-details-${incident.id}`}
-                    className="mt-3 pt-3 border-t border-dashed border-card-border space-y-4"
-                    role="region"
-                    aria-label={`Incident ${incident.id} management actions`}
-                  >
-                    <IncidentManagementActions
-                      incidentId={incident.id}
-                      onActionComplete={fetchIncidents}
-                    />
-                  </div>
-                )}
-              </article>
-            );
-          })
-        )}
+                </article>
+              );
+            })
+          )}
         </div>
       )}
     </section>
