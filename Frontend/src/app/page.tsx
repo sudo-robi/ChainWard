@@ -16,6 +16,7 @@ import MultiChainDashboard from '../components/MultiChainDashboard';
 import AlertSentry from '../components/AlertSentry';
 import AnalyticsDashboard from '../components/AnalyticsDashboard';
 import KeyboardShortcuts from '../components/KeyboardShortcuts';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Home() {
   const [selectedChainId, setSelectedChainId] = useState<string | null>(null);
@@ -32,7 +33,8 @@ export default function Home() {
 
       <AlertSentry />
       <KeyboardShortcuts />
-      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-50">
+      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-50 flex items-center gap-3">
+        <ThemeToggle />
         <WalletConnect />
       </div>
       <header>
