@@ -1,125 +1,104 @@
-# ChainWard: Autonomous Reliability for Orbit Chains
+# ChainWard: An Automatic Safety System for Digital Infrastructure
 
-[![Arbitrum](https://img.shields.io/badge/Blockchain-Arbitrum%20Orbit-blue)](https://arbitrum.io/orbit)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/Status-V3.0--Autonomous-success)](https://github.com/sudo-robi/ChainWard)
-
-**ChainWard** is the industry's first full-stack autonomous response layer designed specifically for Arbitrum Orbit chains. It provides proactive monitoring, decentralized incident reporting, and contract-driven automated mitigation to ensure chain reliability without human bottlenecks.
+**ChainWard** is a digital watchdog that protects custom blockchains (digital networks). It constantly monitors the network's health, detects glitches, and automatically repairs them before they can cause downtime or financial loss—all without needing a human to press a button.
 
 ---
 
-## 🏗️ The V3.0 Architecture
+## 🏗️ How it Works (The Simple Version)
 
-ChainWard V3.0 introduces a hierarchical response stack that bridges the gap between signal detection and automated recovery.
+ChainWard works like an advanced security system for a building. It watches the network's activity and has a set of "automatic repair" steps ready for when something goes wrong.
 
 ```mermaid
 graph TD
-    A[Off-Chain Monitor Agent] -->|Polls Health| B[Orbit RPC]
-    A -->|Submits Signal| C[SecureIncidentManager]
-    C -->|Trigger Hook| D[Response Orchestrator]
-    D -->|Policy Evaluation| E{Auto-Mitigate?}
-    E -->|Yes| F[Workflow Executor]
-    E -->|No| G[Manual Dashboard Alert]
-    F -->|Sequences| H[Automated Runbooks]
-    H -->|Executes Action| I[Response Action Logic]
-    I -->|On-Chain Mitigation| B
+    A[Digital Watchdog] -->|Checks Health| B[Digital Network]
+    A -->|Reports a Problem| C[Safe Storage Hub]
+    C -->|Alarm Trigger| D[Automatic Switchboard]
+    D -->|Reviews Rules| E{Fix Automatically?}
+    E -->|Yes| F[Automatic Repair System]
+    E -->|No| G[Send Urgent Alert to Humans]
+    F -->|Follows Steps| H[Repair Instructions]
+    H -->|Fixes the Network| B
 ```
 
 ---
 
-## ⚡ Key Features
+## ✨ What ChainWard Does for You
 
-### 1. Autonomous Mitigation (V3.0)
-ChainWard transitions from "Alerting" to "Mitigating". High-priority incidents (like `BlockLag`) trigger immediate, atomic response workflows.
-- **Single-Transaction Recovery**: Detection to mitigation happens in one block.
-- **Runbook Sequencing**: Execute multiple defensive actions in an order defined by safety policies.
+### 1. Automatic Repairs (V3.0)
+Most systems just send an alert when they break. ChainWard actually **fixes** the problem. For example, if the network slows down, ChainWard can automatically trigger steps to speed it back up or secure funds instantly.
+- **Lightning Fast**: It detects and fixes problems in seconds.
+- **No Human Required**: It works 24/7, even while you sleep.
 
-### 2. Decentralized Incident Management
-Every incident is recorded on-chain, creating a permanent, auditable forensic timeline.
-- **Forensic Detail**: Records last healthy block, severity, and detection latency.
-- **Role-Based Reporting**: Only authorized, bonded reporters can submit incidents, preventing spam.
+### 2. Permanent Public Logs
+Every time a problem is detected or fixed, the details are written into a "digital stone" that can't be edited or deleted. This ensures full transparency—no one can hide a network failure.
+- **Full History**: You can see exactly when glitches happened and how they were fixed.
+- **Unchangeable Evidence**: Great for audits and building trust with users.
 
-### 3. Economic Alignment (stAAVE Incentives)
-Node operators are economically incentivized to maintain high uptime and report honestly.
-- **Reporter Bonds**: Reporters must stake capital to participate.
-- **Yield Accrual**: Bonded operators earn yield over time, creating a "Quality of Service" reward layer.
-- **Slashing**: Dishonest reporting or missed heartbeats results in bond slashing.
+### 3. Reliability Rewards & Deposits
+The professionals running the network are required to put down a "safety deposit." If they report glitches honestly and keep the network healthy, they earn rewards. If they are dishonest, they lose part of their deposit.
+- **Incentivized Honesty**: Ensures the people watching the network are always acting in your best interest.
+- **Earning Potential**: Reliable operators are rewarded for their good service.
 
-### 4. Hybrid Governance Control
-Admins can fine-tune response thresholds and policies via the **Command Center**.
-- **Dynamic Thresholds**: Adjust `BlockLag` limits or `SequencerStall` timeouts without redeploying code.
-- **Emergency Circuit Breakers**: Manual overrides for the autonomous engine.
-
----
-
-## 🧪 Definitive Proof of Concept
-
-The V3.0 infrastructure is live and verified. You can observe a full autonomous mitigation lifecycle (Detection → Response Trigger → Recovery) in the transaction below:
-
-**[Tx: 0x94df61ed...d198](https://sepolia-rollup.arbitrum.io/tx/0x94df61ed4505877b32375e7b8576003603ce53ffff6e745978ba0c0259e4d198)**
-
-| Event | Status | Layer |
-|-------|--------|-------|
-| `IncidentReported` | ✅ Success | IncidentManager |
-| `IncidentResponseTriggered` | ⚡ Autonomous | Orchestrator |
-| `ResponseStarted` | 🚀 Executing | Orchestrator |
-| `ResponseCompleted` | ✨ Mitigation Success | Orchestrator |
+### 4. Simple Safety Rules
+Control exactly how the system reacts. You can set rules like "If the network slows down for more than 5 minutes, automatically trigger a security pause."
+- **Customizable**: Set the safety level that fits your specific needs.
+- **Manual Overrides**: Humans can still take control whenever they need to.
 
 ---
 
-## 📍 Deployed Addresses (Arbitrum Sepolia)
+## 🧪 See it in Action
 
-| Contract | Current V3.0 Address |
+We have already tested this system, and it worked perfectly without human intervention. You can view the **Permanent Digital Receipt** for a real repair below. This link proves the system detected a problem, started a repair, and finished it successfully—all in one go.
+
+**[View the Permanent Repair Receipt](https://sepolia-rollup.arbitrum.io/tx/0x94df61ed4505877b32375e7b8576003603ce53ffff6e745978ba0c0259e4d198)**
+
+| Step taken | Result |
+|-------|--------|
+| Problem Reported | ✅ Detected |
+| Automatic Trigger | ⚡ Started |
+| Repair in Progress | 🚀 Running |
+| Problem Fixed | ✨ Success |
+
+---
+
+## 📍 Project Infrastructure (For Advanced Users)
+
+These are the digital addresses where our safety system lives.
+
+| System Component | Digital Address |
 |----------|----------------------|
-| **SecureIncidentManager** | `0x73FFF882740ed596AeA90F654Afe2BCbE57c36E1` |
-| **IncidentResponseOrchestrator** | `0xC0A011F642f5eb59535f4E79CbC17EdcC6D80D92` |
-| **WorkflowExecutor** | `0x324E6a1F2c1Ac02AEE916608BEA8D2CBc382945E` |
-| **AutomatedRunbook** | `0xe49F3Bb9C25971D12Bf7220B9000Ca771194d5de` |
-| **OrbitChainRegistry** | `0xf2D0094e9a1c33FAdCd34DA478678639Cb86e6bC` |
+| **Chief Safety Manager** | `0x73FFF882740ed596AeA90F654Afe2BCbE57c36E1` |
+| **Automatic Switchboard** | `0xC0A011F642f5eb59535f4E79CbC17EdcC6D80D92` |
+| **Repair System** | `0x324E6a1F2c1Ac02AEE916608BEA8D2CBc382945E` |
+| **Repair Instructions** | `0xe49F3Bb9C25971D12Bf7220B9000Ca771194d5de` |
+| **Network Settings** | `0xf2D0094e9a1c33FAdCd34DA478678639Cb86e6bC` |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Setting Up
 
-### 1. Install & Setup
+### 1. Installation
 ```bash
-# Clone and install
+# Download the project
 git clone https://github.com/sudo-robi/ChainWard.git
 npm install
 cd Frontend && npm install && cd ..
 
-# Centralized Config Sync
-# This script propagates V3 addresses from local config to all env files
+# Setup the system addresses
 node config/sync-env.js
 ```
 
-### 2. Local Development
+### 2. Running the System
 ```bash
-# Start the Dashboard
+# Open the Dashboard (Visual interface)
 cd Frontend
 npm run dev
 
-# Start the Health Monitor Agent
+# Start the Digital Watchdog (Background monitor)
 node agent/healthMonitor.js
 ```
-
-### 3. Simulation Tooling
-Trigger a full autonomous flow locally to verify your configuration:
-```bash
-curl -X POST http://localhost:3000/api/simulate-incident \
--H "Content-Type: application/json" \
--d '{"type": "BlockLag", "priority": 1}'
-```
-
----
-
-## 🛠️ Tech Stack
-- **Frontend**: Next.js, TailwindCSS, Ethers.js
-- **Contracts**: Solidity 0.8.20, OpenZeppelin, Forge/Foundry
-- **Infrastructure**: Arbitrum Sepolia Rollup
-- **Orchestration**: Node.js Autonomous Agents
 
 ---
 
 ## 📄 License
-ChainWard is released under the MIT License. Developed for the Arbitrum Orbit ecosystem.
+ChainWard is released under the MIT License. Built to make custom blockchains safer and more reliable.
