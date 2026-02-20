@@ -83,6 +83,9 @@ const IncidentLifecycle = () => {
                 </div>
                 <div className={`mt-2 text-xs font-semibold ${isComplete ? 'text-foreground' : 'text-secondary'}`}>
                   {stage.label}
+                  {stage.key === 'validated' && lastIncident && lastIncident.validations > 0 && (
+                    <span className="ml-1 text-primary">({lastIncident.validations})</span>
+                  )}
                 </div>
                 {isCurrent && (
                   <div className="mt-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-[10px] font-bold">

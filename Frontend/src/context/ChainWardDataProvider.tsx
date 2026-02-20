@@ -243,22 +243,26 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                     );
                     batchResults.forEach(inc => {
                         if (inc && Number(inc.id) > 0) {
+                            const validations = inc.validations !== undefined ? Number(inc.validations) : Number(inc[8] || 0);
+                            const disputes = inc.disputes !== undefined ? Number(inc.disputes) : Number(inc[9] || 0);
+
                             allIncidents.push({
-                                id: inc.id.toString(),
-                                incidentType: inc.incidentType,
-                                timestamp: Number(inc.timestamp),
-                                reporter: inc.reporter,
-                                severity: Number(inc.severity),
-                                description: inc.description,
-                                resolved: inc.resolved,
-                                resolvedAt: Number(inc.resolvedAt),
-                                validations: Number(inc.validations),
-                                disputes: Number(inc.disputes),
-                                slashed: inc.slashed,
+                                id: inc.id?.toString() || inc[0]?.toString(),
+                                incidentType: inc.incidentType || inc[1],
+                                timestamp: Number(inc.timestamp || inc[2]),
+                                reporter: inc.reporter || inc[3],
+                                severity: Number(inc.severity ?? inc[4]),
+                                description: inc.description || inc[5],
+                                resolved: inc.resolved ?? inc[6],
+                                resolvedAt: Number(inc.resolvedAt || inc[7]),
+                                validations: validations,
+                                disputes: disputes,
+                                slashed: inc.slashed ?? inc[10],
                             });
                         }
                     });
                 }
+                console.log(`📡 Fetched ${allIncidents.length} incidents. Latest validations: ${allIncidents[0]?.validations}`);
                 setIncidents(allIncidents.sort((a, b) => Number(b.id) - Number(a.id)));
             } else {
                 setIncidents([]);
