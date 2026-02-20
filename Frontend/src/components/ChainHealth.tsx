@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useChainWardData } from '../context/ChainWardDataProvider';
 
 const ChainHealth = () => {
@@ -16,67 +16,130 @@ const ChainHealth = () => {
 
   const now = Math.floor(Date.now() / 1000);
 
-  const blockTime = chainConfig ? `${chainConfig.expectedBlockTime.toString()}s` : (isLoading ? 'Loading...' : 'N/A');
-  const sequencer = isLoading ? 'Loading...'
-    : signalTime > 0 && (now - signalTime) < 1800 ? 'Online' : 'Stale';
-  const l1Batch = isLoading ? 'Loading...' : `#${l1BatchNum}`;
-  const bridgeHealthy = l1BatchTime > 0 && (now - l1BatchTime) < 14400;
-  const bridge = isLoading ? 'Loading...' : (bridgeHealthy ? 'Operational' : 'Stalled');
-  const status: string = isLoading ? 'Loading...'
-    : (signalTime > 0 && (now - signalTime) < 1800 && bridgeHealthy ? 'Healthy' : 'Check System');
+  // Derived Metrics & Calculations
+  const signalAge = signalTime > 0 ? now - signalTime : null;
+  const l1Age = l1BatchTime > 0 ? now - l1BatchTime : null;
+
+  const sequencerStatus = useMemo(() => {
+    if (isLoading && !signalTime) return { label: 'SYNCHRONIZING', color: 'text-blue-400', bg: 'bg-blue-500/10', dot: 'bg-blue-500' };
+    if (!signalTime || (signalAge && signalAge > 3600)) return { label: 'STALE', color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-500' };
+    if (signalAge && signalAge > 600) return { label: 'LAGGING', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-500' };
+    return { label: 'OPERATIONAL', color: 'text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' };
+  }, [isLoading, signalTime, signalAge]);
+
+  const bridgeStatus = useMemo(() => {
+    if (isLoading && !l1BatchTime) return { label: 'INITIALIZING', color: 'text-blue-400' };
+    if (!l1BatchTime || (l1Age && l1Age > 21600)) return { label: 'DEGRADED', color: 'text-red-400' };
+    return { label: 'STABLE', color: 'text-emerald-400' };
+  }, [isLoading, l1BatchTime, l1Age]);
+
+  const healthPercent = useMemo(() => {
+    let score = 100;
+    if (!signalTime || (signalAge && signalAge > 1800)) score -= 40;
+    if (!l1BatchTime || (l1Age && l1Age > 14400)) score -= 30;
+    if (globalError) score -= 20;
+    return Math.max(0, score);
+  }, [signalTime, signalAge, l1BatchTime, l1Age, globalError]);
 
   return (
-    <section className="p-4 sm:p-6 bg-card rounded-xl shadow border border-card-border">
-      <h2 className="text-lg sm:text-xl font-bold mb-2">Chain Health</h2>
-      {isLoading && !chainConfig ? (
-        <div className="space-y-3 animate-pulse">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    <section className="p-1 bg-gradient-to-br from-card-border/50 to-transparent rounded-2xl shadow-2xl border border-card-border/40 overflow-hidden">
+      <div className="bg-card/80 backdrop-blur-xl p-5 sm:p-7 rounded-[14px]">
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+              <span className="text-primary">Orbit</span> Chain Health
+              {isRefreshing && <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>}
+            </h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mt-1 opacity-60">Real-time Performance Monitoring</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="flex flex-col items-end">
+            <div className={`text-3xl font-black font-mono leading-none ${healthPercent > 90 ? 'text-emerald-500' : healthPercent > 60 ? 'text-orange-500' : 'text-red-500'}`}>
+              {healthPercent}%
+            </div>
+            <div className="text-[9px] font-bold opacity-40 uppercase tracking-tighter mt-1">Global Integrity</div>
           </div>
-          <div className="h-10 w-full sm:w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3">
-            <div className="flex flex-col sm:block">
-              <span className="font-semibold text-sm">Status:</span> <span className={`${status === 'Healthy' ? 'text-success' : status === 'Incident' ? 'text-warning' : 'text-danger'} font-mono`}>{status}</span>
-            </div>
-            <div className="flex flex-col sm:block">
-              <span className="font-semibold text-sm">Block Time:</span> <span className="font-mono">{blockTime}</span>
-            </div>
-            <div className="flex flex-col sm:block">
-              <span className="font-semibold text-sm">Sequencer:</span> <span className="font-mono">{sequencer}</span>
+
+        {isLoading && !chainConfig ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="h-24 bg-background/50 rounded-xl border border-card-border/30"></div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-16 bg-background/50 rounded-xl border border-card-border/30"></div>
+              <div className="h-16 bg-background/50 rounded-xl border border-card-border/30"></div>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 text-sm opacity-80">
-            <div className="flex flex-col sm:block">
-              <span className="font-semibold">L1 Batch:</span> <span className="font-mono">{l1Batch}</span>
+        ) : (
+          <div className="space-y-6">
+            {/* Primary Health Indicator */}
+            <div className={`p-4 rounded-xl border ${sequencerStatus.bg.replace('/10', '/5')} border-card-border/40 relative overflow-hidden group transition-all hover:bg-opacity-20`}>
+              <div className="flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className={`w-3 h-3 rounded-full ${sequencerStatus.dot} shadow-[0_0_12px_rgba(0,0,0,0.3)] shadow-${sequencerStatus.dot.replace('bg-', '')}`}></div>
+                    <div className={`absolute inset-0 w-3 h-3 rounded-full ${sequencerStatus.dot} animate-ping opacity-40`}></div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block">Sequencer Heartbeat</label>
+                    <span className={`text-sm font-black font-mono transition-colors ${sequencerStatus.color}`}>
+                      {sequencerStatus.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-mono font-bold">
+                    {signalAge !== null ? `${signalAge}s ago` : '---'}
+                  </div>
+                  <div className="text-[9px] uppercase opacity-30 font-bold">Latency</div>
+                </div>
+              </div>
+              {/* Micro-sparkline representation (visual only) */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-background/20 overflow-hidden">
+                <div className={`h-full ${sequencerStatus.dot} transition-all duration-1000`} style={{ width: signalAge ? `${Math.max(5, 100 - (signalAge / 10))}%` : '0%' }}></div>
+              </div>
             </div>
-            <div className="flex flex-col sm:block">
-              <span className="font-semibold">Bridge:</span> <span className={`font-mono ${bridge === 'Operational' ? 'text-green-500' : 'text-red-500'}`}>{bridge}</span>
+
+            {/* Secondary Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-background/20 p-4 rounded-xl border border-card-border/30 hover:border-primary/20 transition-all">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Bridge Consistency</label>
+                <div className="flex items-end justify-between">
+                  <div className={`text-sm font-black font-mono ${bridgeStatus.color}`}>{bridgeStatus.label}</div>
+                  <div className="text-[10px] font-mono opacity-50">{l1Age ? `${Math.floor(l1Age / 60)}m` : '---'} depth</div>
+                </div>
+              </div>
+              <div className="bg-background/20 p-4 rounded-xl border border-card-border/30 hover:border-primary/20 transition-all">
+                <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Block Frequency</label>
+                <div className="flex items-end justify-between">
+                  <div className="text-sm font-black font-mono text-foreground">
+                    {chainConfig ? `${chainConfig.expectedBlockTime.toString()}s` : '---'}
+                  </div>
+                  <div className="text-[10px] font-mono opacity-50">L2 Target</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Infrastructure Info */}
+            <div className="flex justify-between items-center py-3 border-t border-card-border/40 text-[10px] font-bold uppercase tracking-widest opacity-40">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Batch #{l1BatchNum || '---'}
+              </div>
+              <button
+                onClick={refetch}
+                disabled={isRefreshing}
+                className="hover:opacity-100 transition-opacity active:scale-95 disabled:opacity-20"
+              >
+                {isRefreshing ? 'Syncing...' : 'Force Refresh'}
+              </button>
             </div>
           </div>
-          <button
-            className="mt-2 w-full sm:w-auto px-4 py-2 bg-primary text-white rounded hover:bg-primary/80 disabled:opacity-50 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
-            onClick={refetch}
-            disabled={isRefreshing}
-            aria-label="Refresh chain health metrics"
-          >
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
-        </>
-      )}
-      {globalError && (
-        <div className="mt-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
-          {globalError}
-        </div>
-      )}
+        )}
+        {globalError && (
+          <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-[10px] font-mono text-red-400">
+            ERR: {globalError}
+          </div>
+        )}
+      </div>
     </section>
   );
 };
