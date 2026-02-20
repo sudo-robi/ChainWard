@@ -1,14 +1,16 @@
 import { ethers } from 'ethers';
 
 const RPC_URL = process.env.RPC_URL || 'https://sepolia-rollup.arbitrum.io/rpc';
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INCIDENT_MANAGER_ADDRESS = process.env.INCIDENT_MANAGER_ADDRESS || '0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB';
-const REGISTRY_ADDRESS = process.env.REGISTRY_ADDRESS || '0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4';
+const REGISTRY_ADDRESS = process.env.REGISTRY_ADDRESS || '0xf2D0094e9a1c33FAdCd34DA478678639Cb86e6bC';
 const MONITOR_ADDRESS = process.env.MONITOR_ADDRESS || '0x7a5e0237E45574727aA4352244B1f72559BbA229';
 
 const ensureWallet = () => {
-    if (!PRIVATE_KEY) throw new Error('PRIVATE_KEY not set in environment');
-    return new ethers.Wallet(PRIVATE_KEY as string, getProvider());
+    const pk = process.env.PRIVATE_KEY;
+    if (!pk) {
+        throw new Error('PRIVATE_KEY not set in environment. Please ensure it is defined in Frontend/.env.local or the server environment.');
+    }
+    return new ethers.Wallet(pk, getProvider());
 };
 
 export const getProvider = () => new ethers.JsonRpcProvider(RPC_URL);
