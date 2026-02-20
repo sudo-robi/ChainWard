@@ -24,6 +24,7 @@ const IncidentManagerAbi = [
     "function incidents(uint256) view returns (uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed)",
     "function getIncident(uint256 incidentId) view returns (tuple(uint256 id, string incidentType, uint256 timestamp, address reporter, uint256 severity, string description, bool resolved, uint256 resolvedAt, uint256 validations, uint256 disputes, bool slashed))",
     "event IncidentReported(uint256 indexed incidentId, address indexed reporter, string incidentType, uint256 severity, uint256 timestamp)",
+    "event IncidentValidated(uint256 indexed incidentId, address indexed validator, bool approved)",
     "event IncidentResolved(uint256 indexed incidentId, uint256 timestamp)"
 ];
 
@@ -366,8 +367,13 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             const provider = getProvider();
             incidentManager = new ethers.Contract(incidentManagerAddress, IncidentManagerAbi, provider);
             incidentManager.on('IncidentReported', () => {
-                // Debounce: wait a bit then refetch
-                setTimeout(fetchAllData, 2000);
+                setTimeout(fetchAllData, 1000);
+            });
+            incidentManager.on('IncidentValidated', () => {
+                setTimeout(fetchAllData, 1000);
+            });
+            incidentManager.on('IncidentResolved', () => {
+                setTimeout(fetchAllData, 1000);
             });
         }
 
