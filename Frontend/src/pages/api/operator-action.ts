@@ -17,9 +17,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (action === 'Pause Sequencer') {
       // In this system, pausing is often represented by deactivating the chain monitor
       receipt = await sendTransaction(addresses.registry, REGISTRY_ABI, 'deactivateChain', [chainId]);
-    } else if (action === 'Trigger Failover') {
-      // Custom system thresholds update as a "failover" signal
-      receipt = await sendTransaction(addresses.registry, REGISTRY_ABI, 'updateThresholds', [chainId, 10, 60]);
+    } else if (action === 'Trigger Failover' || action === 'Update Thresholds') {
+      // Use dynamic thresholds from request, fallback to defaults if missing
+      const expected = req.body.expectedBlockTime || 10;
+      const lag = req.body.maxBlockLag || 60;
+      receipt = await sendTransaction(addresses.registry, REGISTRY_ABI, 'updateThresholds', [chainId, expected, lag]);
     } else if (action === 'Resolve Latest incident') {
       let { incidentId } = req.body;
       if (!incidentId) {

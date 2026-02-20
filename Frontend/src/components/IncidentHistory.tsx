@@ -235,6 +235,14 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
                     {incident.rca && (
                       <div className="text-purple-400 font-semibold px-1 rounded bg-purple-400/5">RCA: {incident.rca}</div>
                     )}
+                    <div className="text-blue-400 bg-blue-400/5 px-1 rounded flex items-center gap-1">
+                      <span>🛡️ Validations:</span>
+                      <span className="font-bold">{sharedIncidents.find(i => i.id === incident.id)?.validations || 0}</span>
+                    </div>
+                    <div className="text-orange-400 bg-orange-400/5 px-1 rounded flex items-center gap-1">
+                      <span>⚔️ Disputes:</span>
+                      <span className="font-bold">{sharedIncidents.find(i => i.id === incident.id)?.disputes || 0}</span>
+                    </div>
                   </div>
 
                   {isExpanded && (

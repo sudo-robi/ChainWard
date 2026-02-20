@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { config as appConfig } from '../config';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useBalance } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, formatUnits } from 'viem';
 
 const registryAddress = appConfig.registryAddress as `0x${string}`;
 const rawChainId = appConfig.chainId;
@@ -35,6 +35,49 @@ const RegistryAbi = [
     ],
     outputs: [],
   },
+  {
+    name: 'rewardChain',
+    type: 'function',
+    stateMutability: 'payable',
+    inputs: [{ name: 'chainId', type: 'uint256' }],
+    outputs: [],
+  },
+  {
+    name: 'claimYield',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'chainId', type: 'uint256' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+  {
+    name: 'getYield',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'chainId', type: 'uint256' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'getChain',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'chainId', type: 'uint256' }],
+    outputs: [
+      {
+        components: [
+          { name: 'operator', type: 'address' },
+          { name: 'expectedBlockTime', type: 'uint256' },
+          { name: 'maxBlockLag', type: 'uint256' },
+          { name: 'isActive', type: 'bool' },
+          { name: 'name', type: 'string' },
+        ],
+        name: '',
+        type: 'tuple',
+      },
+    ],
+  },
 ] as const;
 
 const OperatorIncentives = () => {
@@ -58,9 +101,32 @@ const OperatorIncentives = () => {
     }
   });
 
+  // Read Chain Config
+  const { data: chainConfig, isLoading: isLoadingConfig } = useReadContract({
+    address: registryAddress,
+    abi: RegistryAbi,
+    functionName: 'getChain',
+    args: [chainId],
+    query: {
+      enabled: mounted
+    }
+  });
+
+  // Read Yield
+  const { data: yieldVal, refetch: refetchYield } = useReadContract({
+    address: registryAddress,
+    abi: RegistryAbi,
+    functionName: 'getYield',
+    args: [chainId],
+    query: {
+      enabled: mounted
+    }
+  });
+
   // Read User Balance for context
-  const { data: balanceData } = useBalance({
+  const { data: balanceData, refetch: refetchBalance } = useBalance({
     address: address,
+    chainId: Number(chainId),
   });
 
   // Write Actions
@@ -73,11 +139,13 @@ const OperatorIncentives = () => {
   useEffect(() => {
     if (isConfirmed) {
       refetchBond();
+      refetchYield?.();
+      refetchBalance?.();
       setDepositAmount('');
       setWithdrawAmount('');
       setTimeout(() => resetWrite(), 5000);
     }
-  }, [isConfirmed, refetchBond, resetWrite]);
+  }, [isConfirmed, refetchBond, refetchYield, refetchBalance, resetWrite]);
 
   const handleDeposit = () => {
     if (!depositAmount) return;
@@ -100,8 +168,43 @@ const OperatorIncentives = () => {
     });
   };
 
+  const handleClaimYield = () => {
+    if (!yieldVal || yieldVal === BigInt(0)) return;
+    writeContract({
+      address: registryAddress,
+      abi: RegistryAbi,
+      functionName: 'claimYield',
+      args: [chainId, yieldVal],
+    });
+  };
+
+  // Only for demonstration - governance would usually do this
+  const handleSimulateYield = () => {
+    writeContract({
+      address: registryAddress,
+      abi: RegistryAbi,
+      functionName: 'rewardChain',
+      args: [chainId],
+      value: parseEther('0.05'),
+    });
+  };
+
   const bondDisplay = bondVal !== undefined ? `${formatEther(bondVal)} ETH` : '--- ETH';
-  const status = bondVal !== undefined && Number(bondVal) > 0 ? 'Active' : 'Inactive';
+
+  const getStatus = () => {
+    if (!chainConfig) return 'Loading...';
+    if (!chainConfig.isActive) return 'Registry Halted';
+    if (bondVal !== undefined && bondVal > BigInt(0)) return 'Active';
+    return 'Bond Required';
+  };
+
+  const status = getStatus();
+  const statusColor = {
+    'Active': 'text-emerald-400',
+    'Registry Halted': 'text-red-500',
+    'Bond Required': 'text-amber-400',
+    'Loading...': 'text-secondary/60'
+  }[status] || 'text-secondary';
 
   if (!mounted) return null;
 
@@ -139,7 +242,7 @@ const OperatorIncentives = () => {
               <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-card-border/30">
                 <div className="p-4">
                   <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Status</label>
-                  <span className={`text-sm font-black font-mono tracking-tight ${status === 'Active' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className={`text-sm font-black font-mono tracking-tight ${statusColor}`}>
                     {status}
                   </span>
                 </div>
@@ -149,16 +252,24 @@ const OperatorIncentives = () => {
                     {bondDisplay}
                   </span>
                 </div>
-                <div className="p-4">
+                <div className="p-4 group relative cursor-pointer" onClick={handleClaimYield}>
                   <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Yield Accrued</label>
-                  <span className="text-sm font-black font-mono tracking-tight text-emerald-400">
-                    +1.42 ETH
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black font-mono tracking-tight text-emerald-400">
+                      +{yieldVal !== undefined ? formatEther(yieldVal) : '0.00'} ETH
+                    </span>
+                    {yieldVal !== undefined && yieldVal > BigInt(0) && (
+                      <span className="text-[8px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-black animate-pulse uppercase">Claim</span>
+                    )}
+                  </div>
+                  <div className="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/5 transition-colors rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Click to Withdraw</span>
+                  </div>
                 </div>
                 <div className="p-4">
                   <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-1">Wallet Env</label>
                   <span className="text-[10px] font-black font-mono tracking-tighter text-secondary opacity-60">
-                    {balanceData ? `${Number(balanceData.formatted).toFixed(4)} ${balanceData.symbol}` : '---'}
+                    {balanceData ? `${Number(formatEther(balanceData.value)).toFixed(6)} ${balanceData.symbol}` : '---'}
                   </span>
                 </div>
               </div>
@@ -178,12 +289,12 @@ const OperatorIncentives = () => {
                     placeholder="0.00 ETH"
                     value={depositAmount}
                     onChange={e => setDepositAmount(e.target.value)}
-                    disabled={!isConnected || isPending || isConfirming}
+                    disabled={!isConnected || isPending || isConfirming || !chainConfig?.isActive}
                   />
                   <button
                     className="bg-primary hover:bg-primary/90 text-white font-black px-6 py-3 rounded-xl transition-all disabled:opacity-20 active:scale-95 text-xs uppercase tracking-widest"
                     onClick={handleDeposit}
-                    disabled={!isConnected || isPending || isConfirming || !depositAmount}
+                    disabled={!isConnected || isPending || isConfirming || !depositAmount || !chainConfig?.isActive}
                   >
                     Deposit
                   </button>
@@ -245,6 +356,16 @@ const OperatorIncentives = () => {
                 )}
               </div>
             )}
+
+            {/* Simulated Reward Control (Admin Only Observation) */}
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={handleSimulateYield}
+                className="text-[8px] font-black uppercase tracking-widest opacity-20 hover:opacity-100 transition-opacity border border-foreground/20 px-2 py-1 rounded hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-400"
+              >
+                Admin: Inject Yield (0.05 ETH)
+              </button>
+            </div>
           </div>
         )}
       </div>

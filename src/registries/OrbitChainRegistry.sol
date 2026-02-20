@@ -21,6 +21,7 @@ contract OrbitChainRegistry {
     mapping(uint256 => ChainConfig) public chains;
     uint256[] public chainIds;
     mapping(uint256 => uint256) public bonds;
+    mapping(uint256 => uint256) public yields;
 
     event ChainRegistered(
         uint256 indexed chainId,
@@ -34,6 +35,8 @@ contract OrbitChainRegistry {
     event OwnerTransferInitiated(address indexed newOwner);
     event OwnerTransferAccepted(address indexed newOwner);
     event BondWithdrawn(uint256 indexed chainId, address indexed operator, uint256 amount);
+    event YieldRewarded(uint256 indexed chainId, uint256 amount);
+    event YieldClaimed(uint256 indexed chainId, address indexed operator, uint256 amount);
 
     modifier onlyOwner() {
         _checkOnlyOwner();
@@ -149,5 +152,30 @@ contract OrbitChainRegistry {
 
     function getChainIds() external view returns (uint256[] memory) {
         return chainIds;
+    }
+
+    /// @dev Allows governance to reward a specific chain with ETH incentives
+    function rewardChain(uint256 chainId) external payable onlyOwner {
+        require(chains[chainId].isActive, "no chain");
+        require(msg.value > 0, "no value");
+        yields[chainId] += msg.value;
+        emit YieldRewarded(chainId, msg.value);
+    }
+
+    /// @dev Allows the operator to claim accrued yield
+    function claimYield(uint256 chainId, uint256 amount) external {
+        require(chains[chainId].isActive, "no chain");
+        require(msg.sender == chains[chainId].operator, "not operator");
+        uint256 y = yields[chainId];
+        require(amount > 0 && amount <= y, "invalid amount");
+        
+        yields[chainId] = y - amount;
+        (bool ok, ) = payable(msg.sender).call{value: amount}("");
+        require(ok, "transfer failed");
+        emit YieldClaimed(chainId, msg.sender, amount);
+    }
+
+    function getYield(uint256 chainId) external view returns (uint256) {
+        return yields[chainId];
     }
 }

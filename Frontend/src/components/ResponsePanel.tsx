@@ -18,6 +18,8 @@ const ResponsePanel = () => {
   const [txLoading, setTxLoading] = useState(false);
   const [txError, setTxError] = useState<string | null>(null);
   const { role, setRole } = useRole();
+  const [expectedBlockTime, setExpectedBlockTime] = useState('250');
+  const [maxBlockLag, setMaxBlockLag] = useState('60');
 
   const registryAddress = config.registryAddress;
   const chainId = config.chainId;
@@ -82,7 +84,11 @@ const ResponsePanel = () => {
       const response = await fetch('/api/operator-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({
+          action,
+          expectedBlockTime: Number(expectedBlockTime),
+          maxBlockLag: Number(maxBlockLag)
+        })
       });
 
       const data = await response.json();
@@ -150,9 +156,31 @@ const ResponsePanel = () => {
           <span>Broadcast Incident Alert</span>
           <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
         </button>
+        <div className="grid grid-cols-2 gap-3 mt-4 p-4 bg-background/40 rounded-xl border border-card-border/30">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Expected (ms)</label>
+            <input
+              type="number"
+              className="w-full bg-background/60 border border-card-border/40 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary/60"
+              value={expectedBlockTime}
+              onChange={e => setExpectedBlockTime(e.target.value)}
+              disabled={role === 'viewer'}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest opacity-40">Max Lag (s)</label>
+            <input
+              type="number"
+              className="w-full bg-background/60 border border-card-border/40 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary/60"
+              value={maxBlockLag}
+              onChange={e => setMaxBlockLag(e.target.value)}
+              disabled={role === 'viewer'}
+            />
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3 mt-2">
-          <button className="bg-secondary/10 hover:bg-secondary/20 text-secondary-foreground px-4 py-2 rounded-lg transition-colors text-sm" onClick={() => handleAction('Update Thresholds')} disabled={role === 'viewer'}>Update Config</button>
-          <button className="bg-secondary/10 hover:bg-secondary/20 text-secondary-foreground px-4 py-2 rounded-lg transition-colors text-sm" onClick={() => handleAction('Manage Roles')} disabled={role === 'viewer'}>Manage Roles</button>
+          <button className="bg-secondary/10 hover:bg-secondary/20 text-secondary-foreground px-4 py-2 rounded-lg transition-colors text-sm font-bold uppercase tracking-tight" onClick={() => handleAction('Update Thresholds')} disabled={role === 'viewer'}>Update Thresholds</button>
+          <button className="bg-secondary/10 hover:bg-secondary/20 text-secondary-foreground px-4 py-2 rounded-lg transition-colors text-sm font-bold uppercase tracking-tight" onClick={() => handleAction('Manage Roles')} disabled={role === 'viewer'}>Manage Roles</button>
         </div>
         {txLoading && (
           <div className="mt-2 text-sm text-blue-400 font-mono flex items-center gap-2">
