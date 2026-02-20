@@ -5,7 +5,8 @@
     "contracts": {
       "OrbitChainRegistry": "0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4",
       "HealthMonitor": "0x7a5e0237E45574727aA4352244B1f72559BbA229",
-      "IncidentManager": "0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB",
+      "IncidentManager": "0x927786D628dcC759a6bAF80F221feFF164Ae3Eeb",
+      "IncidentResponseOrchestrator": "0x79c70383fF83ca2B200213598143E3d5ab04FbBb",
       "HealthReporter": "0x7a5e0237E45574727aA4352244B1f72559BbA229"
     },
     "explorer": {

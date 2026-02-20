@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { sendTransaction, INCIDENT_ABI, addresses } from '../../lib/tx-helper';
+import { ethers } from 'ethers';
+import { sendTransaction, INCIDENT_ABI, ORCHESTRATOR_ABI, addresses } from '../../lib/tx-helper';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -22,9 +23,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       [type, severityScore, `Simulated ${type} via Dashboard`]
     );
 
+    // Check for Orchestrator events in the logs
+    let autoResponded = false;
+    try {
+      const iface = new ethers.Interface(ORCHESTRATOR_ABI);
+      for (const log of (receipt as any).logs) {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed?.name === 'IncidentResponseTriggered') {
+            autoResponded = true;
+            console.log('⚡ Autonomous Response Triggered for Incident:', parsed.args.incidentId.toString());
+            break;
+          }
+        } catch (e) { /* skip logs from other contracts */ }
+      }
+    } catch (e) {
+      console.warn('Failed to parse orchestrator logs:', e);
+    }
+
     return res.status(200).json({
       status: 'Simulated ' + type,
-      txHash: receipt.hash
+      txHash: receipt.hash,
+      autoResponded
     });
   } catch (error: any) {
     console.error('Simulation Failed:', error);

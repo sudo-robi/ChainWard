@@ -8,6 +8,10 @@ pragma solidity ^0.8.19;
  */
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+interface IncidentResponseOrchestrator {
+    function triggerIncidentResponse(uint256 incidentId, string calldata incidentType) external returns (uint256);
+}
+
 interface IRateLimiter {
     function checkAndRecordSubmission(address reporter) external returns (bool);
 }
@@ -57,6 +61,7 @@ contract SecureIncidentManager is AccessControl {
     address public reputationSystem;
     address public emergencyPause;
     address public timelock;
+    address public orchestrator;
 
     uint256 public nextIncidentId;
     mapping(uint256 => Incident) public incidents;
@@ -148,6 +153,15 @@ contract SecureIncidentManager is AccessControl {
     }
 
     /**
+     * @dev Set orchestrator address
+     * @param _orchestrator Orchestrator address
+     */
+    function setOrchestrator(address _orchestrator) external onlyOwner {
+        orchestrator = _orchestrator;
+        emit IntegrationUpdated("Orchestrator", _orchestrator);
+    }
+
+    /**
      * @dev Authorize a reporter to submit incidents
      * @param _reporter Reporter address
      */
@@ -226,6 +240,15 @@ contract SecureIncidentManager is AccessControl {
             _severity,
             block.timestamp
         );
+
+        // Trigger autonomous response if orchestrator is set
+        if (orchestrator != address(0)) {
+            try IncidentResponseOrchestrator(orchestrator).triggerIncidentResponse(incidentId, _incidentType) {
+                // Response triggered successfully
+            } catch {
+                // Continue if orchestrator fails (don't block reporting)
+            }
+        }
 
         return incidentId;
     }

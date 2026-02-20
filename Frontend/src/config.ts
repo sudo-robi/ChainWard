@@ -19,6 +19,7 @@ if (typeof window !== 'undefined') {
         chainId: process.env.NEXT_PUBLIC_CHAIN_ID,
         registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS,
         incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS,
+        orchestratorAddress: process.env.NEXT_PUBLIC_ORCHESTRATOR_ADDRESS,
     });
 }
 
@@ -27,7 +28,8 @@ export const config = {
     monitorAddress: process.env.NEXT_PUBLIC_MONITOR_ADDRESS || '0x7a5e0237E45574727aA4352244B1f72559BbA229',
     chainId: parseChainId(process.env.NEXT_PUBLIC_CHAIN_ID),
     registryAddress: process.env.NEXT_PUBLIC_REGISTRY_ADDRESS || '0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4',
-    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS || '0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB',
+    incidentManagerAddress: process.env.NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS || '0x927786D628dcC759a6bAF80F221feFF164Ae3Eeb',
+    orchestratorAddress: process.env.NEXT_PUBLIC_ORCHESTRATOR_ADDRESS || '0x79c70383fF83ca2B200213598143E3d5ab04FbBb',
 } as const;
 
 if (typeof window !== 'undefined') {

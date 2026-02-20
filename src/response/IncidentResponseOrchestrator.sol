@@ -179,7 +179,10 @@ contract IncidentResponseOrchestrator is AccessControl {
         response.detectionTime = block.timestamp;
         response.executionPlanId = executionPlanId;
         response.autoResponded = policy.autoRespond;
-        response.responseStatus = "pending";
+        // Status will be set in executeAutoResponse or if manual response is needed
+        if (!policy.autoRespond) {
+            response.responseStatus = "pending";
+        }
 
         emit IncidentResponseTriggered(
             _incidentId,
@@ -206,7 +209,9 @@ contract IncidentResponseOrchestrator is AccessControl {
     {
         IncidentResponse storage response = incidentResponses[_incidentId];
         require(response.incidentId > 0, "response not found");
-        require(!response.autoResponded || bytes(response.responseStatus).length == 0, "already responded");
+        // Allow if no status yet or if it's currently pending
+        bytes32 statusHash = keccak256(bytes(response.responseStatus));
+        require(statusHash == keccak256(bytes("")) || statusHash == keccak256(bytes("pending")), "already responded");
 
         response.responseStatus = "executing";
         response.responseStartTime = block.timestamp;

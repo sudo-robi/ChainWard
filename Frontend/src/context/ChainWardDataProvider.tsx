@@ -28,6 +28,13 @@ const IncidentManagerAbi = [
     "event IncidentResolved(uint256 indexed incidentId, uint256 timestamp)"
 ];
 
+const OrchestratorAbi = [
+    "function incidentResponses(uint256) view returns (uint256 incidentId, string incidentType, uint256 detectionTime, uint256 responseStartTime, uint256 responseCompleteTime, bool autoResponded, uint256 executionPlanId, uint256 workflowExecutionId, string responseStatus, string responseDetails)",
+    "function totalResponsesTriggered() view returns (uint256)",
+    "function successfulAutoResponses() view returns (uint256)",
+    "function failedAutoResponses() view returns (uint256)"
+];
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface ChainConfig {
@@ -50,6 +57,8 @@ export interface IncidentData {
     validations: number;
     disputes: number;
     slashed: boolean;
+    autoResponded: boolean;
+    responseStatus: string;
 }
 
 export interface ChainListItem {
@@ -177,6 +186,7 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             const registry = new ethers.Contract(registryAddress, RegistryAbi, provider);
             const reporter = new ethers.Contract(monitorAddress, ReporterAbi, provider);
             const incidentManager = new ethers.Contract(incidentManagerAddress, IncidentManagerAbi, provider);
+            const orchestrator = config.orchestratorAddress ? new ethers.Contract(config.orchestratorAddress, OrchestratorAbi, provider) : null;
 
             // ── Phase 1: Parallel fetch of all base data ──────────────────────
             const [
@@ -247,9 +257,16 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                 for (let i = 0; i < ids.length; i += BATCH_SIZE) {
                     const batchIds = ids.slice(i, i + BATCH_SIZE);
                     const batchResults = await Promise.all(
-                        batchIds.map(id => incidentManager.getIncident(id).catch(() => null))
+                        batchIds.map(async (id) => {
+                            const [inc, resp] = await Promise.all([
+                                incidentManager.getIncident(id).catch(() => null),
+                                orchestrator ? orchestrator.incidentResponses(id).catch(() => null) : null
+                            ]);
+                            return { inc, resp };
+                        })
                     );
-                    batchResults.forEach(inc => {
+
+                    batchResults.forEach(({ inc, resp }) => {
                         if (inc && Number(inc.id) > 0) {
                             const validations = inc.validations !== undefined ? Number(inc.validations) : Number(inc[8] || 0);
                             const disputes = inc.disputes !== undefined ? Number(inc.disputes) : Number(inc[9] || 0);
@@ -266,11 +283,13 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                                 validations: validations,
                                 disputes: disputes,
                                 slashed: inc.slashed ?? inc[10],
+                                autoResponded: resp ? resp.autoResponded : false,
+                                responseStatus: resp ? resp.responseStatus : 'none'
                             });
                         }
                     });
                 }
-                console.log(`📡 Fetched ${allIncidents.length} incidents. Latest validations: ${allIncidents[0]?.validations}`);
+                console.log(`📡 Fetched ${allIncidents.length} incidents.`);
                 setIncidents(allIncidents.sort((a, b) => Number(b.id) - Number(a.id)));
             } else {
                 setIncidents([]);
@@ -311,7 +330,7 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             // Timeline fetch
             try {
                 const latestBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(0, latestBlock - 5000000); // Increased to 5M blocks to capture demo data
+                const fromBlock = Math.max(0, latestBlock - 45000); // Reduced from 5M to 45k to avoid RPC limits
 
                 const [raisedLogs, resolvedLogs, validatedLogs] = await Promise.all([
                     incidentManager.queryFilter(incidentManager.filters.IncidentReported(), fromBlock, 'latest'),

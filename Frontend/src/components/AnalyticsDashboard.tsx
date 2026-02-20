@@ -48,6 +48,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
 
         const mttrMinutes = resolvedCount > 0 ? Math.floor((totalResolutionTime / resolvedCount) / 60) : 0;
 
+        const autoRespondedCount = sharedIncidents.filter(inc => inc.autoResponded).length;
+        const autonomyScore = sharedIncidents.length > 0 ? Math.round((autoRespondedCount / sharedIncidents.length) * 100) : 0;
+
         const thirtyDaysAgo = Math.floor(Date.now() / 1000) - (30 * 24 * 3600);
         const totalDowntime = sharedIncidents.reduce((acc, inc) => {
             if (inc.timestamp < thirtyDaysAgo) return acc;
@@ -63,6 +66,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
             activeIncidents: activeCount,
             resolvedIncidents: resolvedCount,
             failureDistribution: distribution,
+            autonomyScore: `${autonomyScore}%`,
+            autoRespondedCount
         };
     }, [sharedIncidents]);
 
@@ -177,8 +182,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
                                 <div className={`text-xl sm:text-2xl font-mono ${Number(metrics.uptime.replace('%', '')) > 99 ? 'text-green-500' : 'text-orange-500'}`}>{metrics.uptime}</div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Total Incidents</label>
-                                <div className="text-xl sm:text-2xl font-mono">{metrics.incidentFrequency}</div>
+                                <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Security Autonomy</label>
+                                <div className="text-xl sm:text-2xl font-mono text-purple-500">{metrics.autonomyScore}</div>
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Active/Resolved</label>

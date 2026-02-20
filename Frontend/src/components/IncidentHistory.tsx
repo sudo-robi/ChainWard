@@ -57,6 +57,8 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
         rca: '',
         resolved: inc.resolved,
         comments: [],
+        autoResponded: inc.autoResponded,
+        responseStatus: inc.responseStatus,
         sla: inc.resolvedAt > 0
           ? `${Math.floor((inc.resolvedAt - inc.timestamp) / 60)}m`
           : `${Math.floor((Date.now() / 1000 - inc.timestamp) / 60)}m (Active)`
@@ -219,6 +221,11 @@ const IncidentHistory: React.FC<IncidentHistoryProps> = ({ selectedChainId }) =>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${incident.resolved ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
                         {incident.resolved ? 'Resolved' : 'Active'}
                       </span>
+                      {incident.autoResponded && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-purple-500 text-white animate-pulse">
+                          ⚡ AUTO-MITIGATED
+                        </span>
+                      )}
                       <span className={`text-[10px] opacity-40 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                         ▼
                       </span>
