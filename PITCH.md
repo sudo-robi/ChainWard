@@ -2,7 +2,7 @@
 
 Use this narrative alongside the `DEMO.md` script to drive a high-impact presentation.
 
-## 🎙️ The Hook (30s) - [START ON DASHBOARD]
+## 🎙️ The Hook (30s) - [START ON LIVE VERCEL DASHBOARD: https://chain-ward-man.vercel.app/]
 "In the Orbit ecosystem, downtime isn't just an inconvenience—it's a massive financial risk. Most chains rely on humans reading alerts to fix failures. That's too slow. **ChainWard V3.0** is the first autonomous response layer that detects, proves, and **repairs glitches automatically**, while making the process profitable for operators."
 
 ## 🛑 The Core Problems (1m) - [NAVIGATE TO OPERATOR MGMT]

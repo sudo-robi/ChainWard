@@ -4,7 +4,7 @@ This script is designed for a live presentation where you "Talk" while performin
 
 | Time | Segment | Talk (The Script) | Action (The Interactives) |
 |:---:|:---|:---|:---|
-| **0:00** | **Intro** | "Welcome to ChainWard. We built the first autonomous watchdog for Arbitrum Orbit chains. It doesn't just watch for problems; it fixes them." | Open `localhost:3000`. Toggle **Dark/Light Mode** 🌙 to show UI polish. |
+| **0:00** | **Intro** | "Welcome to ChainWard. We built the first autonomous watchdog for Arbitrum Orbit chains. It doesn't just watch for problems; it fixes them." | Open `https://chain-ward-man.vercel.app/`. Toggle **Dark/Light Mode** 🌙 to show UI polish. |
 | **1:00** | **Dashboard** | "This is your Command Center. We're seeing real-time health metrics—block times, sequencer status, and a permanent audit trail of every network event." | Scroll through **Chain Health** and **Incident History**. Hover over status badges. |
 | **2:00** | **Incentives** | "We align security with profit. Node operators stake a bond to participate. Here, they can manage their stake and claim yield earned from maintaining uptime." | Go to **Operator Management**. **Connect Wallet**. Click **Admin: Inject Yield**, then click **Claim** on the yield badge. |
 | **3:00** | **Simulation** | "Let's break the chain. I'll trigger a 'Critical' Block Lag incident. Watch how the autonomous layer reacts instantly." | Go to **Simulate Incident**. Select **P1**. Click `⚠ Simulate Block Lag`. Show the transaction confirmed in the **Live execution log**. |

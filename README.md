@@ -1,10 +1,10 @@
 # ChainWard: An Automatic Safety System for Digital Infrastructure
 
-**ChainWard** is a digital watchdog that protects custom blockchains (digital networks). It constantly monitors the network's health, detects glitches, and automatically repairs them before they can cause downtime or financial loss—all without needing a human to press a button.
+**ChainWard** is a digital watchdog that protects custom blockchains (digital networks). It constantly monitors the network's health, detects glitches, and automatically repairs them before they can cause downtime or financial loss, all without needing a human to press a button.
 
 ---
 
-## 🏗️ How it Works (The Simple Version)
+## How it Works (The Simple Version)
 
 ChainWard works like an advanced security system for a building. It watches the network's activity and has a set of "automatic repair" steps ready for when something goes wrong.
 
@@ -22,7 +22,7 @@ graph TD
 
 ---
 
-## ✨ What ChainWard Does for You
+## What ChainWard Does for You
 
 ### 1. Automatic Repairs (V3.0)
 Most systems just send an alert when they break. ChainWard actually **fixes** the problem. For example, if the network slows down, ChainWard can automatically trigger steps to speed it back up or secure funds instantly.
@@ -46,7 +46,7 @@ Control exactly how the system reacts. You can set rules like "If the network sl
 
 ---
 
-## 🧪 See it in Action
+## See it in Action
 
 We have already tested this system, and it worked perfectly without human intervention. You can view the **Permanent Digital Receipt** for a real repair below. This link proves the system detected a problem, started a repair, and finished it successfully—all in one go.
 
@@ -54,14 +54,14 @@ We have already tested this system, and it worked perfectly without human interv
 
 | Step taken | Result |
 |-------|--------|
-| Problem Reported | ✅ Detected |
-| Automatic Trigger | ⚡ Started |
-| Repair in Progress | 🚀 Running |
+| Problem Reported |  Detected |
+| Automatic Trigger |  Started |
+| Repair in Progress |  Running |
 | Problem Fixed | ✨ Success |
 
 ---
 
-## 📍 Project Infrastructure (For Advanced Users)
+## Project Infrastructure (For Advanced Users)
 
 These are the digital addresses where our safety system lives.
 
@@ -75,7 +75,7 @@ These are the digital addresses where our safety system lives.
 
 ---
 
-## 🚀 Setting Up
+## Setting Up
 
 ### 1. Installation
 ```bash
