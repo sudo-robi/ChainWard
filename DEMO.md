@@ -1,55 +1,66 @@
-# ChainWard Demo Script
+# ChainWard V3.0: Autonomous Incident Command Demo
 
-## Goal
-Show end-to-end monitoring, incident workflow, and recovery actions.
+## 🎯 Goal
+Demonstrate how ChainWard detects, validates, and **automatically repairs** an Orbit chain failure while managing operator economic incentives—all in one atomic workflow.
 
-## Pre-Demo Checklist
-- Frontend running: `npm -C Frontend run dev`
-- RPC configured in `Frontend/.env.local`
-- `NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS` set
-- Optional: wallet connected for write actions
+---
 
-## Demo Flow (10–12 min)
+## 🏗️ Pre-Demo Setup
+1. **Frontend**: Launch at `http://localhost:3000`
+2. **Wallet**: Connect MetaMask to **Arbitrum Sepolia**.
+3. **Contracts**: Ensure `V3.0 stack` is synchronized via `node config/sync-env.js`.
 
-### 1) Product overview (1 min)
-- What ChainWard is: multi-chain incident command center for Orbit chains.
-- Value: detect → validate → respond fast with on-chain auditability.
+---
 
-### 2) Dashboard tour (2 min)
-- Open `/` dashboard.
-- Highlight:
-  - **Chain Health**: status, block time, sequencer, L1 batch.
-  - **Audit Trail**: incident list and filtering.
-  - **Incident Lifecycle**: stages of detection to response.
+## 🎭 The Demo Flow (8–10 Minutes)
 
-### 3) Fleet status (1–2 min)
-- Show **Multi‑Chain Dashboard**.
-- Explain how registry + monitor contracts power chain discovery.
-- If no chains: show fallback + explain registration flow.
+### 1) The Command Center Overview (1 min)
+*   **Show**: The Dashboard Home.
+*   **Explain**: This is the "Safety Control Room". We monitor block times, sequencer health, and permanent audit trails.
+*   **Action**: Click the **Theme Toggle** 🌙/☀️ to show UI polish and Accessibility.
 
-### 4) Analytics (1–2 min)
-- Open **Real‑Time Analytics**.
-- Explain MTTR, uptime, incident frequency, distribution.
-- Click **Refresh** and **Export** (CSV) to show data pipeline.
+### 2) Economic Health: The Bond Layer (2 min)
+*   **Navigate**: **Operator Management** tab.
+*   **Show**: The "Safety Deposit" system.
+*   **Action (Button Tour)**:
+    *   `Connect Wallet`: Log in via MetaMask.
+    *   `Deposit`: Stake 0.01 ETH to become an "Active" reporter.
+    *   `Admin: Inject Yield`: Show how the system rewards reliable operators over time.
+    *   `Claim`: Click the green "Claim" badge on **Yield Accrued** to withdraw earnings.
+    *   *Value*: We align financial success with network reliability.
 
-### 5) Response actions (2–3 min)
-- Go to **Response and Governance**.
-- Walk through actions: Pause Sequencer, Trigger Failover, Resolve.
-- If wallet connected: show transaction flow (no need to execute).
+### 3) Triggering the Autonomous Loop (3 min)
+*   **Navigate**: **Simulate Incident** panel.
+*   **Action**: 
+    1. Select **Priority P1 (Critical)**.
+    2. Click `⚠ Simulate Block Lag`.
+*   **Watch**: The "Live Execution Log" terminal. Observe the transaction being signed and confirmed.
+*   **Observe**: The `Audit Trail` automatically updates with a new incident.
+*   **Highlight**: The **⚡ AUTO-MITIGATED** badge appearing next to the incident!
 
-### 6) Simulate Incident (2 min)
-- Use **Simulate Incident**.
-- Trigger “Block Lag” or “Sequencer Stall”.
-- Show updates in Audit Trail / Lifecycle (if backend wired).
+### 4) Deep-Dive: Forensic Analysis (1.5 min)
+*   **Action**: Click `View Analysis` on the new incident in the **Incident History**.
+*   **Show**: The **Forensic Timeline**.
+*   **Explain**: This isn't just a log; it's an on-chain receipt of every millisecond of the failure and recovery.
+*   **Observe**: The sequence: *Detection -> Trigger -> Execution -> Success*.
 
-### 7) Close (1 min)
-- Recap: fast detection, coordinated response, on‑chain accountability.
-- Transition to pitch (ROI + differentiation).
+### 5) Governance & Overrides (1.5 min)
+*   **Navigate**: **Response & Governance** panel.
+*   **Action (Button Tour)**:
+    *   `Update Thresholds`: Show how we can change safety limits (e.g., max block lag) on the fly without updating code.
+    *   `Validate Incident`: Show how a human validator can verify the automated response.
+    *   `Resolve Latest Incident`: Perform the final manual "All Clear" to close the case.
+*   **Advanced Actions**: Point out `Pause Sequencer` and `Trigger Failover`—the "Nuclear Options" available to admins.
 
-## Contingencies
-- If RPC rate‑limited: explain throttling and switch to private RPC.
-- If analytics missing: check `NEXT_PUBLIC_INCIDENT_MANAGER_ADDRESS`.
-- If no data: emphasize demo mode and walk through UI.
+### 6) Closing (1 min)
+*   **Navigate**: **Analytics Dashboard**.
+*   **Show**: The "Autonomy Score" and "Security Metrics".
+*   **Action**: Click `Refresh Metrics` and `Export CSV`.
+*   **Final Pitch**: ChainWard doesn't just watch your network; it protects it automatically, earns you money for being reliable, and proves everything on-chain.
 
-## One‑liner to close
-“ChainWard turns incident response into a measurable, auditable, on‑chain workflow—so operators react faster and regulators trust the record.”
+---
+
+## ⚡ The "Wow" Moments
+- **The Atomic Log**: Showing 11 logs produced in a single transaction path.
+- **The Green Badge**: Seeing "⚡ AUTO-MITIGATED" appear without clicking anything.
+- **The Claimable Yield**: Withdrawing real (testnet) ETH rewards for uptime.
