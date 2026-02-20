@@ -63,13 +63,14 @@ const ForensicTimeline = () => {
           timeline.map((event, idx) => {
             const severity = getSeverity(event.reason);
             const isActive = replaying && idx === replayIdx;
-            const eventIcon = event.type === 'Reported' ? '🚨' : event.type === 'Resolved' ? '✅' : '📝';
+            const eventIcon = event.type === 'Reported' ? '🚨' : event.type === 'Resolved' ? '✅' : event.type === 'Validated' ? '⚖️' : '📝';
             return (
               <div
                 key={idx}
                 className={`relative border-l-4 pl-4 py-3 cursor-pointer transition-all rounded-r-lg hover:bg-card/50 flex items-start gap-3 ${isActive ? 'bg-warning/10 border-warning shadow-md' :
                   event.type === 'Reported' ? 'border-red-500/30 hover:border-red-500/50' :
-                    'border-green-500/30 hover:border-green-500/50'
+                    event.type === 'Validated' ? 'border-blue-500/30 hover:border-blue-500/50' :
+                      'border-green-500/30 hover:border-green-500/50'
                   }`}
                 onClick={() => setSelected(event)}
               >
@@ -92,7 +93,11 @@ const ForensicTimeline = () => {
                       <span className="px-2 py-0.5 bg-warning text-white text-xs rounded-full animate-pulse">Live</span>
                     )}
                   </div>
-                  <div className="text-sm font-medium mb-1">{event.type === 'Reported' ? event.reason || 'Incident Detected' : 'Incident Cleared'}</div>
+                  <div className="text-sm font-medium mb-1">
+                    {event.type === 'Reported' ? event.reason || 'Incident Detected' :
+                      event.type === 'Resolved' ? 'Incident Cleared' :
+                        event.reason || 'Validation Recorded'}
+                  </div>
                   {event.incidentId && (
                     <div className="text-xs font-mono opacity-50">ID: #{event.incidentId}</div>
                   )}

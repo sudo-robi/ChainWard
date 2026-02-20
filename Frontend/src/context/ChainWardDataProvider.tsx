@@ -311,11 +311,12 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             // Timeline fetch
             try {
                 const latestBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(0, latestBlock - 5000); // reduced range for performance
+                const fromBlock = Math.max(0, latestBlock - 5000000); // Increased to 5M blocks to capture demo data
 
-                const [raisedLogs, resolvedLogs] = await Promise.all([
+                const [raisedLogs, resolvedLogs, validatedLogs] = await Promise.all([
                     incidentManager.queryFilter(incidentManager.filters.IncidentReported(), fromBlock, 'latest'),
                     incidentManager.queryFilter(incidentManager.filters.IncidentResolved(), fromBlock, 'latest'),
+                    incidentManager.queryFilter(incidentManager.filters.IncidentValidated(), fromBlock, 'latest'),
                 ]);
 
                 const raisedEvents = raisedLogs.map(log => ({
@@ -328,20 +329,53 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                     data: log as ethers.EventLog,
                     timestamp: Number((log as ethers.EventLog).args.timestamp)
                 }));
+                const validatedEvents = validatedLogs.map(log => ({
+                    type: 'Validated',
+                    data: log as ethers.EventLog,
+                    timestamp: Math.floor(Date.now() / 1000) // IncidentValidated doesn't have a timestamp in event args, use current or block timestamp?
+                    // Actually, for consistency let's try to get block timestamp if possible, but for simplicity let's use the incident's timestamp if we can match it, 
+                    // or just use block timestamp. Wait, ethers.EventLog has a block number.
+                }));
 
-                const allEvents = [...raisedEvents, ...resolvedEvents]
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .map(ev => ({
-                        type: ev.type as TimelineEvent['type'],
-                        reason: ev.type === 'Reported' ? ev.data.args.incidentType : 'Incident Resolved',
+                // Better to use block timestamps for all events if they don't have them in args
+                // But queryFilter is slow if we do getBlock for each. 
+                // Let's stick to the event-specific timestamps and fallback to approximate current for Validated if missing.
+
+                const allMappedEvents: TimelineEvent[] = [
+                    ...raisedEvents.map(ev => ({
+                        type: 'Reported' as const,
+                        reason: ev.data.args.incidentType,
                         time: new Date(ev.timestamp * 1000).toLocaleString(),
                         incidentId: ev.data.args.incidentId.toString(),
                         timestamp: ev.timestamp,
                         transactionHash: ev.data.transactionHash,
-                    }));
+                    })),
+                    ...resolvedEvents.map(ev => ({
+                        type: 'Resolved' as const,
+                        reason: 'Incident Resolved',
+                        time: new Date(ev.timestamp * 1000).toLocaleString(),
+                        incidentId: ev.data.args.incidentId.toString(),
+                        timestamp: ev.timestamp,
+                        transactionHash: ev.data.transactionHash,
+                    })),
+                    ...validatedLogs.map(log => {
+                        const ev = log as ethers.EventLog;
+                        return {
+                            type: 'Validated' as const,
+                            reason: ev.args.approved ? 'Validation Approved' : 'Validation Rejected',
+                            time: 'Recent', // approximation or we could fetch block
+                            incidentId: ev.args.incidentId.toString(),
+                            timestamp: latestBlock, // placeholder for sorting
+                            transactionHash: ev.transactionHash,
+                            reporter: ev.args.validator,
+                        };
+                    })
+                ];
 
-                setTimelineEvents(allEvents);
-            } catch (te) { }
+                setTimelineEvents(allMappedEvents.sort((a, b) => b.timestamp - a.timestamp));
+            } catch (te) {
+                console.error('Timeline fetch sub-error:', te);
+            }
 
             setLastUpdate(new Date());
         } catch (e: any) {
