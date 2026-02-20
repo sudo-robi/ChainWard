@@ -15,7 +15,9 @@ const SimulateIncident = () => {
   };
 
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (logs.length > 0) {
+      logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [logs]);
 
   const handleSimulate = async (type: string) => {
@@ -111,7 +113,7 @@ const SimulateIncident = () => {
           <span className="text-[10px] opacity-50 uppercase">Arbitrum Sepolia</span>
         </div>
         <div className="space-y-1">
-          {logs.length === 0 &&<span className="text-secondary/30 italic">Ready to simulate...</span>}
+          {logs.length === 0 && <span className="text-secondary/30 italic">Ready to simulate...</span>}
           {logs.map((log, i) => (
             <div key={i} className={`${log.includes('Error') ? 'text-red-400' : log.includes('Success') || log.includes('Hash') ? 'text-green-400' : 'text-primary/80'}`}>
               {log}
