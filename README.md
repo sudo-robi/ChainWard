@@ -45,13 +45,25 @@
    forge test
    ```
 
-## Deployed Addresses (Arbitrum Sepolia)
+## Deployed Addresses (Arbitrum Sepolia - V3.0)
 
-- **OrbitChainRegistry:** `0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4`
-- **SecureIncidentManager:** `0x926e9c2885B7a75BDe8baeBa8d9738Aa28aA4DdB`
-- **HealthMonitor:** `0xcd04f7675B556Bd060bd465fC690d67568cAc6bb`
-- **HealthReporter:** `0x2dB1352bc197A93330198175e69338Cf4B5fF115`
+- **SecureIncidentManager:** `0x73FFF882740ed596AeA90F654Afe2BCbE57c36E1`
+- **IncidentResponseOrchestrator:** `0xC0A011F642f5eb59535f4E79CbC17EdcC6D80D92`
+- **WorkflowExecutor:** `0x324E6a1F2c1Ac02AEE916608BEA8D2CBc382945E`
+- **AutomatedRunbook:** `0xe49F3Bb9C25971D12Bf7220B9000Ca771194d5de`
+- **OrbitChainRegistry:** `0xf2D0094e9a1c33FAdCd34DA478678639Cb86e6bC`
 - **RPC:** `https://sepolia-rollup.arbitrum.io/rpc`
+
+## Definitive Proof of Concept
+
+You can view the latest end-to-end autonomous mitigation (Detection → Trigger → Execution → Success) on Arbiscan here:
+[Tx: 0x94df61ed...d198](https://sepolia-rollup.arbitrum.io/tx/0x94df61ed4505877b32375e7b8576003603ce53ffff6e745978ba0c0259e4d198)
+
+This atomic transaction includes:
+1. `IncidentReported` (Manager)
+2. `IncidentResponseTriggered` (Orchestrator)
+3. `ResponseStarted` (Orchestrator)
+4. `ResponseCompleted` (Orchestrator)
 
 ## Contributing
 
