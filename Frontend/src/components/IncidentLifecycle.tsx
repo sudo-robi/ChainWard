@@ -4,8 +4,8 @@ import { useChainWardData } from '../context/ChainWardDataProvider';
 
 const stages = [
   { label: 'Detection', key: 'detected' },
-  { label: 'Validation', key: 'validated' },
   { label: 'On-chain Record', key: 'recorded' },
+  { label: 'Validation', key: 'validated' },
   { label: 'Automated Response', key: 'responded' }
 ];
 
@@ -38,7 +38,7 @@ const IncidentLifecycle = () => {
     // Automated Response (Step 4): Complete if resolved or slashed
     const isResponded = latest.resolved || latest.slashed;
 
-    const stepStatuses = [isDetected, isValidated, isRecorded, isResponded];
+    const stepStatuses = [isDetected, isRecorded, isValidated, isResponded];
 
     // Progress bar fill: Find the "furthest" continuous completion or use count
     // For visual consistency, we'll fill up to the latest "true" step in sequence
