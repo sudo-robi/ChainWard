@@ -169,7 +169,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ selectedChainId
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest">MTTR (Avg)</label>
+                                <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Mean Time To Resolution (Avg)</label>
                                 <div className="text-xl sm:text-2xl font-mono text-primary">{metrics.mttr}</div>
                             </div>
                             <div className="space-y-1">
