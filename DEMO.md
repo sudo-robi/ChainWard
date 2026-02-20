@@ -1,66 +1,14 @@
-# ChainWard V3.0: Autonomous Incident Command Demo
+# ChainWard V3.0: Interactive Demo Script (5-7 Minutes)
 
-## 🎯 Goal
-Demonstrate how ChainWard detects, validates, and **automatically repairs** an Orbit chain failure while managing operator economic incentives—all in one atomic workflow.
+This script is designed for a live presentation where you "Talk" while performing "Actions" in the frontend.
 
----
-
-## 🏗️ Pre-Demo Setup
-1. **Frontend**: Launch at `http://localhost:3000`
-2. **Wallet**: Connect MetaMask to **Arbitrum Sepolia**.
-3. **Contracts**: Ensure `V3.0 stack` is synchronized via `node config/sync-env.js`.
-
----
-
-## 🎭 The Demo Flow (8–10 Minutes)
-
-### 1) The Command Center Overview (1 min)
-*   **Show**: The Dashboard Home.
-*   **Explain**: This is the "Safety Control Room". We monitor block times, sequencer health, and permanent audit trails.
-*   **Action**: Click the **Theme Toggle** 🌙/☀️ to show UI polish and Accessibility.
-
-### 2) Economic Health: The Bond Layer (2 min)
-*   **Navigate**: **Operator Management** tab.
-*   **Show**: The "Safety Deposit" system.
-*   **Action (Button Tour)**:
-    *   `Connect Wallet`: Log in via MetaMask.
-    *   `Deposit`: Stake 0.01 ETH to become an "Active" reporter.
-    *   `Admin: Inject Yield`: Show how the system rewards reliable operators over time.
-    *   `Claim`: Click the green "Claim" badge on **Yield Accrued** to withdraw earnings.
-    *   *Value*: We align financial success with network reliability.
-
-### 3) Triggering the Autonomous Loop (3 min)
-*   **Navigate**: **Simulate Incident** panel.
-*   **Action**: 
-    1. Select **Priority P1 (Critical)**.
-    2. Click `⚠ Simulate Block Lag`.
-*   **Watch**: The "Live Execution Log" terminal. Observe the transaction being signed and confirmed.
-*   **Observe**: The `Audit Trail` automatically updates with a new incident.
-*   **Highlight**: The **⚡ AUTO-MITIGATED** badge appearing next to the incident!
-
-### 4) Deep-Dive: Forensic Analysis (1.5 min)
-*   **Action**: Click `View Analysis` on the new incident in the **Incident History**.
-*   **Show**: The **Forensic Timeline**.
-*   **Explain**: This isn't just a log; it's an on-chain receipt of every millisecond of the failure and recovery.
-*   **Observe**: The sequence: *Detection -> Trigger -> Execution -> Success*.
-
-### 5) Governance & Overrides (1.5 min)
-*   **Navigate**: **Response & Governance** panel.
-*   **Action (Button Tour)**:
-    *   `Update Thresholds`: Show how we can change safety limits (e.g., max block lag) on the fly without updating code.
-    *   `Validate Incident`: Show how a human validator can verify the automated response.
-    *   `Resolve Latest Incident`: Perform the final manual "All Clear" to close the case.
-*   **Advanced Actions**: Point out `Pause Sequencer` and `Trigger Failover`—the "Nuclear Options" available to admins.
-
-### 6) Closing (1 min)
-*   **Navigate**: **Analytics Dashboard**.
-*   **Show**: The "Autonomy Score" and "Security Metrics".
-*   **Action**: Click `Refresh Metrics` and `Export CSV`.
-*   **Final Pitch**: ChainWard doesn't just watch your network; it protects it automatically, earns you money for being reliable, and proves everything on-chain.
-
----
-
-## ⚡ The "Wow" Moments
-- **The Atomic Log**: Showing 11 logs produced in a single transaction path.
-- **The Green Badge**: Seeing "⚡ AUTO-MITIGATED" appear without clicking anything.
-- **The Claimable Yield**: Withdrawing real (testnet) ETH rewards for uptime.
+| Time | Segment | Talk (The Script) | Action (The Interactives) |
+|:---:|:---|:---|:---|
+| **0:00** | **Intro** | "Welcome to ChainWard. We built the first autonomous watchdog for Arbitrum Orbit chains. It doesn't just watch for problems; it fixes them." | Open `localhost:3000`. Toggle **Dark/Light Mode** 🌙 to show UI polish. |
+| **1:00** | **Dashboard** | "This is your Command Center. We're seeing real-time health metrics—block times, sequencer status, and a permanent audit trail of every network event." | Scroll through **Chain Health** and **Incident History**. Hover over status badges. |
+| **2:00** | **Incentives** | "We align security with profit. Node operators stake a bond to participate. Here, they can manage their stake and claim yield earned from maintaining uptime." | Go to **Operator Management**. **Connect Wallet**. Click **Admin: Inject Yield**, then click **Claim** on the yield badge. |
+| **3:00** | **Simulation** | "Let's break the chain. I'll trigger a 'Critical' Block Lag incident. Watch how the autonomous layer reacts instantly." | Go to **Simulate Incident**. Select **P1**. Click `⚠ Simulate Block Lag`. Show the transaction confirmed in the **Live execution log**. |
+| **4:00** | **Autonomy** | "There it is. The system detected the lag and automatically triggered a repair. See the **⚡ AUTO-MITIGATED** badge? That happened without a human." | Point to the new incident in history. Click **Inspect (TX)** to show 11 atomic on-chain logs. |
+| **5:00** | **Governance** | "Admins can override the autopilot. We can adjust thresholds like 'Max Block Lag' on the fly to tune the system's sensitivity." | Go to **Response & Governance**. Click **Update Thresholds**. Click **Validate Incident**. Finally, click **Resolve Latest Incident**. |
+| **6:00** | **Analytics** | "Finally, we prove reliability over time. Our Analytics show the MTTR and Autonomy Rate—critical metrics for trust and compliance." | Go to **Real-Time Analytics**. Click **Refresh Metrics**. Click **Export CSV** to show the data reporting utility. |
+| **7:00** | **Close** | "ChainWard turns incident response into an autonomous, profitable workflow. It's security that pays for itself. Thank you." | Return to **Multi-Chain Fleet** to show the scale of the system. |

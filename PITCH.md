@@ -1,28 +1,32 @@
-# ChainWard V3.0 Pitch: The Autonomous Watchdog
+# ChainWard V3.0 Pitch Narrative (5-7 Minutes)
 
-## 🎙️ The Hook (30s)
-“Every year, blockchain networks lose billions to silent failures—glitches that happen while everyone is asleep. Most monitoring systems just send an alert and wait for a human. **ChainWard is different.** We built the first autonomous response layer for the Arbitrum Orbit ecosystem that detects, proves, and **automatically repairs** incidents in seconds, not hours.”
+Use this narrative alongside the `DEMO.md` script to drive a high-impact presentation.
 
-## 🛑 The Problem (45s)
-1. **The "Human Bottleneck"**: By the time a DevOps engineer sees a Slack alert and logs in, millions in value could have leaked from a stalled bridge or a lagging sequencer.
-2. **Opacity**: When a chain fails, users are kept in the dark. There's no permanent, public record of exactly what happened.
-3. **Misaligned Incentives**: Node operators are currently monitored by "trust", not by programmatic economic laws.
+## 🎙️ The Hook (30s) - [START ON DASHBOARD]
+"In the Orbit ecosystem, downtime isn't just an inconvenience—it's a massive financial risk. Most chains rely on humans reading alerts to fix failures. That's too slow. **ChainWard V3.0** is the first autonomous response layer that detects, proves, and **repairs glitches automatically**, while making the process profitable for operators."
 
-## ⚡ The Solution: V3.0 Autonomous Response (60s)
-ChainWard transitions from a dashboard into a **proactive defense system**:
-*   **Automatic Hand-off**: High-priority incidents trigger an on-chain **Orchestrator** that executes pre-approved repair "Runbooks" (e.g., pausing an affected sequencer).
-*   **Permanent Audit Trail**: Every failure and every automated fix is etched into the blockchain. It's a "Forensic Black Box" for networks.
-*   **The Yield Layer**: We turned monitoring into a business. Operators stake bonds to report health and earn **continuous yield** as long as the network stays healthy. Honest performance = Higher profits.
+## 🛑 The Core Problems (1m) - [NAVIGATE TO OPERATOR MGMT]
+1.  **Reaction Time**: Manual response takes minutes. ChainWard takes **seconds**.
+2.  **Opacity**: ChainWard creates a **permanent, on-chain Black Box** for every incident.
+3.  **Incentives**: We replace 'Trust' with **Programmatic Economics**.
 
-## 💎 The Differentiation (45s)
-*   **Zero-Intervention Mitigation**: We proven end-to-end recovery in a **single atomic transaction**—no manual action needed.
-*   **Economic Watchdog**: Unlike generic tools, we use "Slashing and Yield" to ensure reporters never lie about a network's health.
-*   **Orbit-Native**: Specifically designed for the unique failure modes of Orbit chains (Sequencer Stall, L2-specific Block Lag).
+## ⚡ The Breakthrough: Autonomous Mitigation (2m) - [SIMULATE INCIDENT]
+"While I simulate this 'Block Lag' failure, notice that I'm not playing a video. This is live on Arbitrum Sepolia. The system is signing a transaction that triggers an atomic sequence: **Detection -> Policy Check -> Runbook Execution -> Recovery**. 
 
-## 🚀 Traction & Proof
-*   **Live Infrastructure**: Fully deployed on Arbitrum Sepolia.
-*   **Verified Prototype**: Our [Definitive POC Transaction](https://sepolia-rollup.arbitrum.io/tx/0x94df61ed4505877b32375e7b8576003603ce53ffff6e745978ba0c0259e4d198) proves 11-stage autonomous recovery is a reality.
-*   **Interactive Command Center**: A production-ready React dashboard that scales from one chain to an entire fleet.
+This is the **⚡ AUTO-MITIGATED** breakthrough. We've proven that recovery can happen in a single transaction path, with zero manual intervention."
 
-## 📢 The Close
-“ChainWard turns incident response from a chaotic manual fire-drill into a measurable, autonomous, and profitable workflow. We make blockchains stay online—and prove it on-chain.”
+## 💎 Decentralized Reliability (1m) - [SHOW ANALYTICS & GOVERNANCE]
+"We've turned reliability into a measurable asset. 
+*   **The Yield Layer**: Reliable operators earn money; bad ones lose it. 
+*   **Dynamic Governance**: You control the safety switchboard, adjusting network sensitivity without touching a single line of code.
+*   **Proof of Work**: Every fix is an auditable on-chain proof."
+
+## 📢 The Ask & Close (1m) - [RETURN TO FLEET VIEW]
+"ChainWard is production-ready, live-deployed, and ready to scale. We're moving from a world of 'Alerts' to a world of 'Automatic Safety'. Let's build a chain that never sleeps and never fails. Thank you."
+
+---
+
+### 💡 Presentation Tips:
+*   **Sync**: When you say "Yield Layer", click the **Claim** button.
+*   **Sync**: When you say "Atomic Sequence", point to the **Transaction Logs** in Arbiscan.
+*   **Confidence**: The UI is optimized for V3.0; let the "⚡ AUTO-MITIGATED" badge do the talking.
