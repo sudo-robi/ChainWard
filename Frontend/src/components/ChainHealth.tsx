@@ -21,10 +21,9 @@ const ChainHealth = () => {
   const l1Age = l1BatchTime > 0 ? now - l1BatchTime : null;
 
   const sequencerStatus = useMemo(() => {
-    if (isLoading && !signalTime) return { label: 'SYNCHRONIZING', color: 'text-blue-400', bg: 'bg-blue-500/10', dot: 'bg-blue-500' };
     // Relaxed threshold: 30 days (2592000s) for demo persistence
     if (!signalTime || (signalAge && signalAge > 2592000)) return { label: 'STALE', color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-500' };
-    if (signalAge && signalAge > 1800) return { label: 'LAGGING', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-500' };
+    if (signalAge && signalAge > 2592000) return { label: 'LAGGING', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-500' };
     return { label: 'OPERATIONAL', color: 'text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' };
   }, [isLoading, signalTime, signalAge]);
 
