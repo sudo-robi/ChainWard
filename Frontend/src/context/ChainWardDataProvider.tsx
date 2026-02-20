@@ -213,6 +213,14 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             const signalTimeNum = Number(signalTime);
             const l1BatchTimeNum = Number(l1BatchTime);
             const l1BatchNumNum = Number(l1BatchNum);
+
+            console.log('📊 Provider Fetch:', {
+                chainId: chainId.toString(),
+                signal: signalTimeNum,
+                batchTime: l1BatchTimeNum,
+                batchNum: l1BatchNumNum
+            });
+
             setLastSignalTime(signalTimeNum);
             setLastL1BatchTimestamp(l1BatchTimeNum);
             setLastL1BatchNumber(l1BatchNumNum);
