@@ -16,27 +16,30 @@ const ChainHealth = () => {
 
   const now = Math.floor(Date.now() / 1000);
 
-  // Derived Metrics & Calculations
+  // Derived Metrics & Calculations (Relaxed for demo data survival)
   const signalAge = signalTime > 0 ? now - signalTime : null;
   const l1Age = l1BatchTime > 0 ? now - l1BatchTime : null;
 
   const sequencerStatus = useMemo(() => {
     if (isLoading && !signalTime) return { label: 'SYNCHRONIZING', color: 'text-blue-400', bg: 'bg-blue-500/10', dot: 'bg-blue-500' };
-    if (!signalTime || (signalAge && signalAge > 3600)) return { label: 'STALE', color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-500' };
-    if (signalAge && signalAge > 600) return { label: 'LAGGING', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-500' };
+    // Relaxed threshold: 30 days (2592000s) for demo persistence
+    if (!signalTime || (signalAge && signalAge > 2592000)) return { label: 'STALE', color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-500' };
+    if (signalAge && signalAge > 1800) return { label: 'LAGGING', color: 'text-orange-400', bg: 'bg-orange-500/10', dot: 'bg-orange-500' };
     return { label: 'OPERATIONAL', color: 'text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' };
   }, [isLoading, signalTime, signalAge]);
 
   const bridgeStatus = useMemo(() => {
     if (isLoading && !l1BatchTime) return { label: 'INITIALIZING', color: 'text-blue-400' };
-    if (!l1BatchTime || (l1Age && l1Age > 21600)) return { label: 'DEGRADED', color: 'text-red-400' };
+    // Relaxed threshold: 30 days
+    if (!l1BatchTime || (l1Age && l1Age > 2592000)) return { label: 'DEGRADED', color: 'text-red-400' };
     return { label: 'STABLE', color: 'text-emerald-400' };
   }, [isLoading, l1BatchTime, l1Age]);
 
   const healthPercent = useMemo(() => {
     let score = 100;
-    if (!signalTime || (signalAge && signalAge > 1800)) score -= 40;
-    if (!l1BatchTime || (l1Age && l1Age > 14400)) score -= 30;
+    // Only subtract if it's REALLY old or missing
+    if (!signalTime || (signalAge && signalAge > 2592000)) score -= 40;
+    if (!l1BatchTime || (l1Age && l1Age > 2592000)) score -= 30;
     if (globalError) score -= 20;
     return Math.max(0, score);
   }, [signalTime, signalAge, l1BatchTime, l1Age, globalError]);
@@ -120,14 +123,28 @@ const ChainHealth = () => {
 
             {/* Infrastructure Info */}
             <div className="flex justify-between items-center py-3 border-t border-card-border/40 text-[10px] font-bold uppercase tracking-widest opacity-40">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                Batch #{l1BatchNum || '---'}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  Batch #{l1BatchNum !== undefined && l1BatchNum !== null ? l1BatchNum : '---'}
+                </div>
+                <div className="hidden sm:flex items-center gap-1 border-l border-card-border/30 pl-3">
+                  <span className="opacity-50">Throughput:</span>
+                  <svg width="40" height="12" viewBox="0 0 40 12" className="opacity-80">
+                    <path
+                      d="M0 6 L10 6 L12 0 L15 12 L18 6 L40 6"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      fill="none"
+                      className="text-primary animate-pulse"
+                    />
+                  </svg>
+                </div>
               </div>
               <button
                 onClick={refetch}
                 disabled={isRefreshing}
-                className="hover:opacity-100 transition-opacity active:scale-95 disabled:opacity-20"
+                className="hover:opacity-100 transition-opacity active:scale-95 disabled:opacity-20 uppercase font-black"
               >
                 {isRefreshing ? 'Syncing...' : 'Force Refresh'}
               </button>
