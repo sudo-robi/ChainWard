@@ -9,9 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { type, priority, parentId } = req.body;
 
   // Severity mapping: Frontend sends 0(P0), 1(P1), 2(P2), 3(P3). 
-  // Contract expects uint256 severity. 
-  // We'll map high severity (P0, P1) to 3, P2 to 2, P3 to 1.
-  const severityScore = (priority === 0 || priority === 1) ? 3 : (priority === 2 ? 2 : 1);
+  // Contract expects uint256 severity (0: low, 1: med, 2: critical).
+  const severityScore = (priority === 0 || priority === 1) ? 2 : (priority === 2 ? 1 : 0);
 
   try {
     console.log(`🚀 Simulating incident: ${type} with severity ${severityScore}, parent: ${parentId || 0}`);

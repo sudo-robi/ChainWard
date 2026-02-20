@@ -45,9 +45,8 @@ const SimulateIncident = () => {
 
       if (res.ok) {
         addLog("Transaction confirmed on-chain!");
-        const match = data.output?.match(/0x[a-fA-F0-9]{64}/);
-        if (match) {
-          addLog(`TX Hash: ${match[0]}`);
+        if (data.txHash) {
+          addLog(`TX Hash: ${data.txHash}`);
         }
         addLog(`Success: ${data.status}`);
       } else {
