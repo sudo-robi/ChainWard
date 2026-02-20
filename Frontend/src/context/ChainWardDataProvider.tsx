@@ -193,6 +193,9 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                 registry.getChainIds().catch(() => []),
             ]);
 
+            // Clear errors once we have any successful response
+            setError(null);
+
             // Update chain config
             if (chainConfigResult) {
                 setChainConfig({
@@ -212,13 +215,23 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
             setLastL1BatchTimestamp(l1BatchTimeNum);
             setLastL1BatchNumber(l1BatchNumNum);
 
+            // Release the loading lock early so UI can show config-based data
+            if (!hasFetchedOnce.current) {
+                setIsLoading(false);
+                hasFetchedOnce.current = true;
+            }
+
             // ── Phase 2: Fetch all incidents (batched, shared) ────────────────
             const nextId = Number(nextIdResult);
             setNextIncidentIdVal(nextId);
 
             if (nextId > 0) {
-                const ids = Array.from({ length: nextId }, (_, i) => i + 1);
-                const BATCH_SIZE = 8; // Slightly bigger batches since we're the only caller now
+                // If nextId is very high (e.g. 10,000), only fetch the last 20 for dashboard performance
+                const MAX_FETCH = 20;
+                const startId = Math.max(1, nextId - MAX_FETCH + 1);
+                const ids = Array.from({ length: nextId - startId + 1 }, (_, i) => startId + i);
+
+                const BATCH_SIZE = 5;
                 const allIncidents: IncidentData[] = [];
 
                 for (let i = 0; i < ids.length; i += BATCH_SIZE) {
@@ -243,107 +256,81 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                             });
                         }
                     });
-                    // Small delay between batches to avoid rate limits
-                    if (i + BATCH_SIZE < ids.length) {
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                    }
                 }
-                setIncidents(allIncidents);
+                setIncidents(allIncidents.sort((a, b) => Number(b.id) - Number(a.id)));
             } else {
                 setIncidents([]);
             }
 
-            // ── Phase 3: Fetch multi-chain fleet status ───────────────────────
+            // ... phase 3 & 4 ...
+            // Final check on multi-chain fleet status
             const chainIds: bigint[] = chainIdsResult;
             if (chainIds.length > 0) {
                 const chainDetails = await Promise.all(
                     chainIds.map(async (id: bigint) => {
-                        const [cfgData, signal, activeInc] = await Promise.all([
-                            registry.chains(id).catch(() => null),
-                            reporter.lastSignalTime(id).catch(() => BigInt(0)),
-                            reporter.activeIncidentId(id).catch(() => BigInt(0)),
-                        ]);
+                        try {
+                            const [cfgData, signal, activeInc] = await Promise.all([
+                                registry.chains(id).catch(() => null),
+                                reporter.lastSignalTime(id).catch(() => BigInt(0)),
+                                reporter.activeIncidentId(id).catch(() => BigInt(0)),
+                            ]);
 
-                        const now = Math.floor(Date.now() / 1000);
-                        const signalNum = Number(signal);
-                        const isOnline = signalNum > 0 && (now - signalNum) < 120;
-                        const hasIncident = Number(activeInc) !== 0;
+                            const now = Math.floor(Date.now() / 1000);
+                            const signalNum = Number(signal);
+                            const isOnline = signalNum > 0 && (now - signalNum) < 300;
+                            const hasIncident = Number(activeInc) !== 0;
 
-                        return {
-                            id: id.toString(),
-                            name: cfgData?.name || `Chain ${id}`,
-                            status: (hasIncident ? 'Incident' : isOnline ? 'Healthy' : 'Stale') as ChainListItem['status'],
-                            lastSeen: signalNum > 0 ? new Date(signalNum * 1000).toLocaleTimeString() : 'Never',
-                        };
+                            return {
+                                id: id.toString(),
+                                name: cfgData?.name || `Chain ${id}`,
+                                status: (hasIncident ? 'Incident' : isOnline ? 'Healthy' : 'Stale') as ChainListItem['status'],
+                                lastSeen: signalNum > 0 ? new Date(signalNum * 1000).toLocaleTimeString() : 'Never',
+                            };
+                        } catch (err) {
+                            return null;
+                        }
                     })
                 );
-                setChainList(chainDetails);
-            } else if (chainId) {
-                // Fallback: show the default chain
-                const fallbackConfig = await registry.chains(chainId).catch(() => null);
-                setChainList([{
-                    id: String(chainId),
-                    name: fallbackConfig?.name || 'Arbitrum Sepolia',
-                    status: fallbackConfig?.isActive ? 'Stale' : 'Unregistered',
-                    lastSeen: 'Never',
-                }]);
+                setChainList(chainDetails.filter(c => c !== null) as ChainListItem[]);
             }
 
-            // ── Phase 4: Fetch timeline events ────────────────────────────────
+            // Timeline fetch
             try {
                 const latestBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(0, latestBlock - 100000);
-
-                const raisedFilter = incidentManager.filters.IncidentReported();
-                const resolvedFilter = incidentManager.filters.IncidentResolved();
+                const fromBlock = Math.max(0, latestBlock - 5000); // reduced range for performance
 
                 const [raisedLogs, resolvedLogs] = await Promise.all([
-                    incidentManager.queryFilter(raisedFilter, fromBlock, 'latest'),
-                    incidentManager.queryFilter(resolvedFilter, fromBlock, 'latest'),
+                    incidentManager.queryFilter(incidentManager.filters.IncidentReported(), fromBlock, 'latest'),
+                    incidentManager.queryFilter(incidentManager.filters.IncidentResolved(), fromBlock, 'latest'),
                 ]);
 
-                const events: TimelineEvent[] = [];
+                const raisedEvents = raisedLogs.map(log => ({
+                    type: 'Reported',
+                    data: log as ethers.EventLog,
+                    timestamp: Number((log as ethers.EventLog).args.timestamp)
+                }));
+                const resolvedEvents = resolvedLogs.map(log => ({
+                    type: 'Resolved',
+                    data: log as ethers.EventLog,
+                    timestamp: Number((log as ethers.EventLog).args.timestamp)
+                }));
 
-                raisedLogs.forEach(log => {
-                    const eventLog = log as ethers.EventLog;
-                    events.push({
-                        type: 'Reported',
-                        reason: eventLog.args.incidentType,
-                        time: new Date(Number(eventLog.args.timestamp) * 1000).toLocaleString(),
-                        incidentId: eventLog.args.incidentId.toString(),
-                        reporter: eventLog.args.reporter,
-                        description: eventLog.args.incidentType,
-                        timestamp: Number(eventLog.args.timestamp),
-                    });
-                });
+                const allEvents = [...raisedEvents, ...resolvedEvents]
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .map(ev => ({
+                        type: ev.type as TimelineEvent['type'],
+                        reason: ev.type === 'Reported' ? ev.data.args.incidentType : 'Incident Resolved',
+                        time: new Date(ev.timestamp * 1000).toLocaleString(),
+                        incidentId: ev.data.args.incidentId.toString(),
+                        timestamp: ev.timestamp,
+                    }));
 
-                resolvedLogs.forEach(log => {
-                    const eventLog = log as ethers.EventLog;
-                    events.push({
-                        type: 'Resolved',
-                        reason: 'Incident Resolved',
-                        time: new Date(Number(eventLog.args.timestamp) * 1000).toLocaleString(),
-                        incidentId: eventLog.args.incidentId.toString(),
-                        description: 'Incident resolved on-chain',
-                        timestamp: Number(eventLog.args.timestamp),
-                    });
-                });
+                setTimelineEvents(allEvents);
+            } catch (te) { }
 
-                events.sort((a, b) => a.timestamp - b.timestamp);
-                setTimelineEvents(events);
-            } catch (timelineErr) {
-                console.warn('Timeline events fetch failed (non-critical):', timelineErr);
-                // Don't fail the whole load for timeline
-            }
-
-            // Done!
-            setError(null);
             setLastUpdate(new Date());
-            hasFetchedOnce.current = true;
         } catch (e: any) {
             console.error('ChainWardDataProvider fetch error:', e);
-
-            // Don't overwrite good data with errors — keep stale data
             if (!hasFetchedOnce.current) {
                 const errorMsg = e?.code === 'SERVER_ERROR' || e?.message?.includes('429')
                     ? 'RPC rate limited — retrying...'

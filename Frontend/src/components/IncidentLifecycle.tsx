@@ -42,10 +42,8 @@ const IncidentLifecycle = () => {
 
     // Progress bar fill: Find the "furthest" continuous completion or use count
     // For visual consistency, we'll fill up to the latest "true" step in sequence
-    let progressIdx = 0;
-    if (isValidated) progressIdx = 1;
-    if (isValidated && isRecorded) progressIdx = 2;
-    if (isValidated && isRecorded && isResponded) progressIdx = 3;
+    const completedCount = stepStatuses.filter(Boolean).length;
+    const progressIdx = completedCount - 1;
 
     return {
       steps: stepStatuses,
@@ -71,10 +69,9 @@ const IncidentLifecycle = () => {
         <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4">
           {stages.map((stage, idx) => {
             const isComplete = steps[idx];
-            // Step is "current" if it's the first one that is NOT complete, 
-            // OR if it's the latest one that IS complete and we're in a specific state.
-            // Simplified: The active pulse should be on the next pending step.
-            const isCurrent = (idx === 0 && !steps[1]) || (idx > 0 && steps[idx - 1] && !steps[idx]);
+            // Step is "current" if it's the first one that is NOT complete.
+            const firstIncompleteIdx = steps.indexOf(false);
+            const isCurrent = idx === firstIncompleteIdx && lastIncident;
 
             return (
               <div key={stage.key} className="flex flex-col items-center text-center">
@@ -87,7 +84,7 @@ const IncidentLifecycle = () => {
                 <div className={`mt-2 text-xs font-semibold ${isComplete ? 'text-foreground' : 'text-secondary'}`}>
                   {stage.label}
                 </div>
-                {isCurrent && lastIncident && (
+                {isCurrent && (
                   <div className="mt-1 px-2 py-0.5 bg-primary/20 text-primary rounded-full text-[10px] font-bold">
                     Active
                   </div>
