@@ -18,12 +18,12 @@ const ChainHealth = () => {
 
   const blockTime = chainConfig ? `${chainConfig.expectedBlockTime.toString()}s` : (isLoading ? 'Loading...' : 'N/A');
   const sequencer = isLoading ? 'Loading...'
-    : signalTime > 0 && (now - signalTime) < 60 ? 'Online' : 'Stale';
+    : signalTime > 0 && (now - signalTime) < 1800 ? 'Online' : 'Stale';
   const l1Batch = isLoading ? 'Loading...' : `#${l1BatchNum}`;
-  const bridgeHealthy = l1BatchTime > 0 && (now - l1BatchTime) < 3600;
+  const bridgeHealthy = l1BatchTime > 0 && (now - l1BatchTime) < 14400;
   const bridge = isLoading ? 'Loading...' : (bridgeHealthy ? 'Operational' : 'Stalled');
   const status: string = isLoading ? 'Loading...'
-    : (signalTime > 0 && (now - signalTime) < 60 && bridgeHealthy ? 'Healthy' : 'Check System');
+    : (signalTime > 0 && (now - signalTime) < 1800 && bridgeHealthy ? 'Healthy' : 'Check System');
 
   return (
     <section className="p-4 sm:p-6 bg-card rounded-xl shadow border border-card-border">

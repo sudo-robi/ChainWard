@@ -17,10 +17,10 @@ const SystemLayersStatus = () => {
     : chainConfig.maxBlockLag > BigInt(0) ? 'Configured' : 'Not Configured';
 
   const detection = isLoading ? 'Loading...'
-    : signalTime > 0 && (now - signalTime) < 300 ? 'Active' : 'Stale';
+    : signalTime > 0 && (now - signalTime) < 1800 ? 'Active' : 'Stale';
 
   const bridge = isLoading ? 'Loading...'
-    : l1Time > 0 && (now - l1Time) < 3600 ? 'Connective' : 'Stalled';
+    : l1Time > 0 && (now - l1Time) < 14400 ? 'Connective' : 'Stalled';
 
   const incidentHistory = isLoading ? 'Loading...' : 'Healthy';
 

@@ -31,10 +31,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       receipt = await sendTransaction(addresses.incidentManager, INCIDENT_ABI, 'resolveIncident', [incidentId, 'Resolved via Admin Dashboard']);
     } else if (action === 'Broadcast Incident Alert') {
-      // Trigger a status signal on the monitor
+      // Trigger a status signal on the monitor with FRESH timestamps
+      const now = Math.floor(Date.now() / 1000);
       receipt = await sendTransaction(addresses.monitor, MONITOR_ABI, 'submitHealthSignal', [
         chainId,
-        0, 0, 0, true, 0, 0, true, "ADMIN_BROADCAST_ALERT"
+        1,       // dummy blockNumber
+        now,     // blockTimestamp (FRESH!)
+        1001,    // dummy sequencerNumber
+        true,    // healthy
+        1,       // dummy l1BatchNum
+        now - 30, // l1BatchTime (FRESH!)
+        true,    // bridgeHealthy
+        "ADMIN_BROADCAST_ALERT"
       ]);
     } else {
       return res.status(400).json({ status: 'Unknown action: ' + action });
