@@ -12,27 +12,46 @@ const stages = [
 const IncidentLifecycle = () => {
   const { incidents, isLoading } = useChainWardData();
 
-  // Derive lifecycle stage from shared incident data
-  const { currentStage, lastIncident } = useMemo(() => {
+  // Derive lifecycle stage and individual step statuses from shared incident data
+  const { steps, lastIncident, currentProgressIndex } = useMemo(() => {
     if (incidents.length === 0) {
-      return { currentStage: 0, lastIncident: null };
+      return {
+        steps: stages.map(() => false),
+        lastIncident: null,
+        currentProgressIndex: -1
+      };
     }
 
     // Get the most recent incident (highest ID)
     const sorted = [...incidents].sort((a, b) => Number(b.id) - Number(a.id));
     const latest = sorted[0];
 
-    let stage = 0; // Detection: always active if we found an incident
+    // Detection (Step 1): Active if any incident found
+    const isDetected = true;
 
-    if (latest.validations > 0) {
-      stage = 2; // Validated + On-chain Record
-    }
+    // Validation (Step 2): Complete if validations exist
+    const isValidated = latest.validations > 0;
 
-    if (latest.resolved) {
-      stage = 3; // Full lifecycle complete
-    }
+    // On-chain Record (Step 3): Complete if we retrieved it from the contract
+    const isRecorded = true;
 
-    return { currentStage: stage, lastIncident: latest };
+    // Automated Response (Step 4): Complete if resolved or slashed
+    const isResponded = latest.resolved || latest.slashed;
+
+    const stepStatuses = [isDetected, isValidated, isRecorded, isResponded];
+
+    // Progress bar fill: Find the "furthest" continuous completion or use count
+    // For visual consistency, we'll fill up to the latest "true" step in sequence
+    let progressIdx = 0;
+    if (isValidated) progressIdx = 1;
+    if (isValidated && isRecorded) progressIdx = 2;
+    if (isValidated && isRecorded && isResponded) progressIdx = 3;
+
+    return {
+      steps: stepStatuses,
+      lastIncident: latest,
+      currentProgressIndex: progressIdx
+    };
   }, [incidents]);
 
   return (
@@ -44,15 +63,19 @@ const IncidentLifecycle = () => {
         <div className="absolute top-5 left-6 right-6 h-0.5 bg-background">
           <div
             className="h-full bg-primary transition-all duration-1000"
-            style={{ width: `${(currentStage / (stages.length - 1)) * 100}%` }}
+            style={{ width: currentProgressIndex >= 0 ? `${(currentProgressIndex / (stages.length - 1)) * 100}%` : '0%' }}
           ></div>
         </div>
 
         {/* Stages */}
         <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4">
           {stages.map((stage, idx) => {
-            const isComplete = idx <= currentStage;
-            const isCurrent = idx === currentStage;
+            const isComplete = steps[idx];
+            // Step is "current" if it's the first one that is NOT complete, 
+            // OR if it's the latest one that IS complete and we're in a specific state.
+            // Simplified: The active pulse should be on the next pending step.
+            const isCurrent = (idx === 0 && !steps[1]) || (idx > 0 && steps[idx - 1] && !steps[idx]);
+
             return (
               <div key={stage.key} className="flex flex-col items-center text-center">
                 <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${isComplete
