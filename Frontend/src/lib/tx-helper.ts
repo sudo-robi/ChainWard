@@ -6,12 +6,13 @@ const INCIDENT_MANAGER_ADDRESS = process.env.INCIDENT_MANAGER_ADDRESS || '0x926e
 const REGISTRY_ADDRESS = process.env.REGISTRY_ADDRESS || '0x5dF982674c638D38d16cB9D1d6d07fC3d93BfBe4';
 const MONITOR_ADDRESS = process.env.MONITOR_ADDRESS || '0x7a5e0237E45574727aA4352244B1f72559BbA229';
 
-if (!PRIVATE_KEY) {
-    throw new Error('PRIVATE_KEY not set in environment');
-}
+const ensureWallet = () => {
+    if (!PRIVATE_KEY) throw new Error('PRIVATE_KEY not set in environment');
+    return new ethers.Wallet(PRIVATE_KEY as string, getProvider());
+};
 
 export const getProvider = () => new ethers.JsonRpcProvider(RPC_URL);
-export const getWallet = () => new ethers.Wallet(PRIVATE_KEY as string, getProvider());
+export const getWallet = () => ensureWallet();
 
 export const INCIDENT_ABI = [
     "function reportIncident(string incidentType, uint256 severity, string description) external returns (uint256)",

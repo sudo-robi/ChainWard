@@ -137,6 +137,19 @@ const ForensicTimeline = () => {
                   <span className="font-mono">{selected.incidentId}</span>
                 </div>
               )}
+              {selected.transactionHash && (
+                <div className="flex justify-between border-b border-card-border pb-2">
+                  <span className="text-secondary">Transaction</span>
+                  <a
+                    href={`https://sepolia.arbiscan.io/tx/${selected.transactionHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[10px] text-blue-400 underline hover:text-blue-300"
+                  >
+                    {selected.transactionHash.slice(0, 10)}...{selected.transactionHash.slice(-8)}
+                  </a>
+                </div>
+              )}
               {selected.reporter && (
                 <div className="flex justify-between border-b border-card-border pb-2">
                   <span className="text-secondary">Reporter</span>

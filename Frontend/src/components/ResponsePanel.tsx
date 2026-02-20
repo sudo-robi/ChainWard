@@ -162,7 +162,7 @@ const ResponsePanel = () => {
         )}
         {txHash && (
           <div className="mt-2 text-xs text-blue-300 font-mono">
-            Tx Hash: <a href={`https://explorer.chain/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">{txHash}</a>
+            Tx Hash: <a href={`https://sepolia.arbiscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">{txHash}</a>
           </div>
         )}
         {actionStatus && <div className="mt-2 text-sm text-secondary font-mono">{actionStatus}</div>}

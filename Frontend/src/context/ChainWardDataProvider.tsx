@@ -66,6 +66,7 @@ export interface TimelineEvent {
     reporter?: string;
     description?: string;
     timestamp: number;
+    transactionHash?: string;
 }
 
 export interface ChainWardContextData {
@@ -323,6 +324,7 @@ export const ChainWardDataProvider = ({ children }: { children: ReactNode }) => 
                         time: new Date(ev.timestamp * 1000).toLocaleString(),
                         incidentId: ev.data.args.incidentId.toString(),
                         timestamp: ev.timestamp,
+                        transactionHash: ev.data.transactionHash,
                     }));
 
                 setTimelineEvents(allEvents);
