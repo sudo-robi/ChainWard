@@ -1,14 +1,22 @@
-# ChainWard V3.0: Interactive Demo Script (5-7 Minutes)
+# ChainWard V3.0: 10-Minute Interactive Demo Script
 
-This script is designed for a live presentation where you "Talk" while performing "Actions" in the frontend.
+This script is synchronized with the **10-Minute Technical Pitch**. Perform the actions while speaking the corresponding narrative sections.
 
-| Time | Segment | Talk (The Script) | Action (The Interactives) |
+| Time | Segment | Talk Summary | Interactive Action |
 |:---:|:---|:---|:---|
-| **0:00** | **Intro** | "Welcome to ChainWard. We built the first autonomous watchdog for Arbitrum Orbit chains. It doesn't just watch for problems; it fixes them." | Open `https://chain-ward-man.vercel.app/`. Toggle **Dark/Light Mode** 🌙 to show UI polish. |
-| **1:00** | **Dashboard** | "This is your Command Center. We're seeing real-time health metrics—block times, sequencer status, and a permanent audit trail of every network event." | Scroll through **Chain Health** and **Incident History**. Hover over status badges. |
-| **2:00** | **Incentives** | "We align security with profit. Node operators stake a bond to participate. Here, they can manage their stake and claim yield earned from maintaining uptime." | Go to **Operator Management**. **Connect Wallet**. Click **Admin: Inject Yield**, then click **Claim** on the yield badge. |
-| **3:00** | **Simulation** | "Let's break the chain. I'll trigger a 'Critical' Block Lag incident. Watch how the autonomous layer reacts instantly." | Go to **Simulate Incident**. Select **P1**. Click `⚠ Simulate Block Lag`. Show the transaction confirmed in the **Live execution log**. |
-| **4:00** | **Autonomy** | "There it is. The system detected the lag and automatically triggered a repair. See the **⚡ AUTO-MITIGATED** badge? That happened without a human." | Point to the new incident in history. Click **Inspect (TX)** to show 11 atomic on-chain logs. |
-| **5:00** | **Governance** | "Admins can override the autopilot. We can adjust thresholds like 'Max Block Lag' on the fly to tune the system's sensitivity." | Go to **Response & Governance**. Click **Update Thresholds**. Click **Validate Incident**. Finally, click **Resolve Latest Incident**. |
-| **6:00** | **Analytics** | "Finally, we prove reliability over time. Our Analytics show the MTTR and Autonomy Rate—critical metrics for trust and compliance." | Go to **Real-Time Analytics**. Click **Refresh Metrics**. Click **Export CSV** to show the data reporting utility. |
-| **7:00** | **Close** | "ChainWard turns incident response into an autonomous, profitable workflow. It's security that pays for itself. Thank you." | Return to **Multi-Chain Fleet** to show the scale of the system. |
+| **0:00** | **The Hook** | Introduction to the infrastructure crisis and ChainWard's vision. | Open `https://chain-ward-man.vercel.app/`. Toggle **Dark Mode**. Point to the **Security Status** banner. |
+| **1:30** | **The Problem** | Explain why current tools (SRE/Slack alerts) are too slow for DeFi. | Scroll through **Chain Health** (Block Time, Sequencer). Hover over **Incident History** badges. |
+| **3:00** | **Architecture** | Walk through the tiers: Signal, Orchestration, and Execution. | Navigate to **Multi-Chain Dashboard**. Show the registry discovery. Open **Real-Time Analytics**. |
+| **5:00** | **The Simulation**| Trigger a critical failure and watch the autonomous response loop. | Go to **Simulate Incident**. Select **P1**. Click `⚠ Simulate Block Lag`. Show the transaction confirmed in the **Live terminal log**. |
+| **6:00** | **Autonomy Proof**| Demonstrate the transition from "Problem" to "Fix" on Arbiscan. | Verify the **⚡ AUTO-MITIGATED** badge. Click **Inspect (TX)** to show the atomic logs (11 steps). |
+| **7:00** | **The Forensics**| Deep-dive into the incident timeline and atomic on-chain record. | Click **View Analysis** on the incident. Walk through the **Forensic Timeline** steps visually. |
+| **8:00** | **Economic Layer**| Show how bonds and yield accrue for reliable node operators. | Go to **Operator Management**. **Connect Wallet**. Click **Admin: Inject Yield**, wait for feedback, then click **Claim**. |
+| **9:00** | **Governance** | Tuning the system's sensitivity and the human-in-the-loop override. | Go to **Response & Governance**. Change a threshold. Click **Update Thresholds**. Click **Resolve Latest Incident**. |
+| **9:45** | **Conclusion** | Final pitch on the "Self-Healing Network" and Autonomy Score. | Return to **Home Dashboard**. Highlight the "Security Autonomy" metric. Final wave/close. |
+
+---
+
+### 💡 Presentation Guide
+- **Pace**: Don't rush the simulation. Let the terminal logs build tension before showing the success badge.
+- **Deep Links**: When moving between tabs, explain *why* (e.g., "Now that we see the failure, let's look at the incentives that drive the fix").
+- **Inspect**: If using Arbiscan, highlight the `IncidentResponseTriggered` event specifically.
