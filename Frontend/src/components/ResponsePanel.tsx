@@ -143,7 +143,7 @@ const ResponsePanel = () => {
           <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
         </button>
         <button className="bg-blue-500/10 text-blue-500 border border-blue-500/30 hover:bg-blue-500 hover:text-white px-4 py-2 rounded-lg transition-all font-medium text-left flex items-center justify-between group" onClick={() => handleAction('Validate Incident')} disabled={role === 'viewer'}>
-          <span>Validate Incident (Step 2)</span>
+          <span>Validate Incident (Step 3)</span>
           <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
         </button>
         <button className="bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-white px-4 py-2 rounded-lg transition-all font-medium text-left flex items-center justify-between group" onClick={() => handleAction('Broadcast Incident Alert')} disabled={role === 'viewer'}>
