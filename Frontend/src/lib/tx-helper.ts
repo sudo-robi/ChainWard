@@ -15,6 +15,7 @@ export const getWallet = () => new ethers.Wallet(PRIVATE_KEY as string, getProvi
 
 export const INCIDENT_ABI = [
     "function reportIncident(string incidentType, uint256 severity, string description) external returns (uint256)",
+    "function validateIncident(uint256 incidentId, bool approved, string feedback) external",
     "function resolveIncident(uint256 incidentId, string reason) external",
     "function nextIncidentId() view returns (uint256)"
 ];

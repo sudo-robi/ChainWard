@@ -30,6 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         incidentId = Number(BigInt(nextId) - BigInt(1));
       }
       receipt = await sendTransaction(addresses.incidentManager, INCIDENT_ABI, 'resolveIncident', [incidentId, 'Resolved via Admin Dashboard']);
+    } else if (action === 'Validate Incident') {
+      let { incidentId } = req.body;
+      if (!incidentId) {
+        const wallet = getWallet();
+        const incidents = new ethers.Contract(addresses.incidentManager, INCIDENT_ABI, wallet);
+        const nextId = await incidents.nextIncidentId();
+        if (BigInt(nextId) <= BigInt(1)) throw new Error('No incidents to validate');
+        incidentId = Number(BigInt(nextId) - BigInt(1));
+      }
+      receipt = await sendTransaction(addresses.incidentManager, INCIDENT_ABI, 'validateIncident', [incidentId, true, "Validated via Dashboard Admin"]);
     } else if (action === 'Broadcast Incident Alert') {
       // Trigger a status signal on the monitor with FRESH timestamps
       const now = Math.floor(Date.now() / 1000);
